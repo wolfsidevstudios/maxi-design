@@ -65,16 +65,25 @@ function App() {
   const [settings, setSettings] = useState<AppSettings>(() => {
     try {
       const saved = localStorage.getItem('sleek_settings');
-      return saved ? JSON.parse(saved) : {
+      return saved ? {
+        ...JSON.parse(saved),
+        // Ensure new settings have defaults if not in localStorage
+        enableThinking: JSON.parse(saved).enableThinking ?? true,
+        enableStreaming: JSON.parse(saved).enableStreaming ?? true
+      } : {
         activeModel: 'gemini-3-pro-preview',
         raceModel: 'gemini-2.5-flash',
-        customApiKey: ''
+        customApiKey: '',
+        enableThinking: true,
+        enableStreaming: true
       };
     } catch (e) {
       return {
         activeModel: 'gemini-3-pro-preview',
         raceModel: 'gemini-2.5-flash',
-        customApiKey: ''
+        customApiKey: '',
+        enableThinking: true,
+        enableStreaming: true
       };
     }
   });
@@ -191,16 +200,16 @@ function App() {
     if (viewMode === 'editor') {
       try {
         if (!chatSessionRef.current) {
-          chatSessionRef.current = createChatSession(messages, settings.activeModel, settings.customApiKey);
+          chatSessionRef.current = createChatSession(messages, settings.activeModel, settings.customApiKey, settings.enableThinking);
         }
         if (isRaceMode && !challengerSessionRef.current) {
-          challengerSessionRef.current = createChatSession(challengerMessages, settings.raceModel, settings.customApiKey);
+          challengerSessionRef.current = createChatSession(challengerMessages, settings.raceModel, settings.customApiKey, settings.enableThinking);
         }
       } catch (e: any) {
         addNotification('error', 'Initialization Error', 'Failed to initialize AI. Please check your API key.');
       }
     }
-  }, [viewMode, isRaceMode, settings.activeModel, settings.raceModel, settings.customApiKey]);
+  }, [viewMode, isRaceMode, settings.activeModel, settings.raceModel, settings.customApiKey, settings.enableThinking]);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -276,7 +285,7 @@ function App() {
      });
   };
 
-  const handleStartProject = (initialPrompt: string, referenceImage?: string) => {
+  const handleStartProject = (initialPrompt: string, referenceImage?: string, initialTab: 'chat' | 'studio' = 'chat') => {
     const newId = Date.now().toString();
     const initialScreen: Screen = {
       id: 'screen-1',
@@ -320,17 +329,19 @@ function App() {
     setAttachedImage(referenceImage || null);
     setSelectedElementStyles(null);
     setActiveTool('select');
-    setActiveTab('chat');
+    setActiveTab(initialTab);
 
     // Initialize session
-    chatSessionRef.current = createChatSession([], settings.activeModel, settings.customApiKey);
+    chatSessionRef.current = createChatSession([], settings.activeModel, settings.customApiKey, settings.enableThinking);
 
     setViewMode('editor');
     
     // Small delay to allow render, then trigger generation
-    setTimeout(() => {
-      handleSendMessageReal(initialPrompt, referenceImage || null);
-    }, 500);
+    if (initialPrompt && initialTab !== 'studio') {
+      setTimeout(() => {
+        handleSendMessageReal(initialPrompt, referenceImage || null);
+      }, 500);
+    }
   };
 
   const handleLoadProject = (project: ProjectData) => {
@@ -361,7 +372,8 @@ function App() {
     chatSessionRef.current = createChatSession(
       project.messages, 
       project.settings?.activeModel || settings.activeModel, 
-      project.settings?.customApiKey || settings.customApiKey
+      project.settings?.customApiKey || settings.customApiKey,
+      project.settings?.enableThinking ?? settings.enableThinking
     );
 
     setViewMode('editor');
@@ -482,10 +494,13 @@ function App() {
       setPhase('theming');
       if (isMain) setStatusSteps(prev => ({ ...prev, analyzed: true }));
 
+      // Only force phase switches if we're actually going to update UI in real-time
       const themeTimer = setTimeout(() => {
          setPhase('coding');
          if (isMain) setStatusSteps(prev => ({ ...prev, planned: true, generating: true }));
       }, 2000);
+
+      let finalHtml = '';
 
       try {
         await streamResponse(session, userMsg.content, userMsg.attachments, (chunk) => {
@@ -517,9 +532,19 @@ function App() {
           
           extractedHtml = extractedHtml.trim();
           if (extractedHtml) {
-             setHtml(extractedHtml);
+             finalHtml = extractedHtml;
+             // Only update live if streaming is enabled
+             if (settings.enableStreaming) {
+               setHtml(extractedHtml);
+             }
           }
         });
+
+        // After stream is done, ensure final HTML is set (crucial if streaming was disabled)
+        if (!settings.enableStreaming && finalHtml) {
+           setHtml(finalHtml);
+        }
+
       } catch (e: any) {
         console.error("Stream error", e);
         const errorMsg = e.message || e.toString();
@@ -560,7 +585,7 @@ function App() {
 
     if (isRaceMode) {
       if (!challengerSessionRef.current) {
-        challengerSessionRef.current = createChatSession(challengerMessages, settings.raceModel, settings.customApiKey);
+        challengerSessionRef.current = createChatSession(challengerMessages, settings.raceModel, settings.customApiKey, settings.enableThinking);
       }
       promises.push(
         processStream(challengerSessionRef.current, setChallengerHtmlCode, setChallengerDesignPhase, false, settings.raceModel)
@@ -583,17 +608,14 @@ function App() {
 
   const handleEditSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Reusing the studio update logic implicitly via visual tools now
-    // But keeping this for the "AI Edit" pill if activeTool is 'edit'
     if (!editInputValue.trim()) return;
-    // ... logic remains same ...
   };
 
   const handleWinRace = (winner: 'main' | 'challenger') => {
     if (winner === 'challenger') {
       updateActiveScreenHtml(challengerHtmlCode);
       setMessages(challengerMessages);
-      chatSessionRef.current = createChatSession(challengerMessages, settings.activeModel, settings.customApiKey);
+      chatSessionRef.current = createChatSession(challengerMessages, settings.activeModel, settings.customApiKey, settings.enableThinking);
     }
     setIsRaceMode(false);
     setChallengerHtmlCode('');
@@ -608,7 +630,7 @@ function App() {
       setChallengerHtmlCode(getActiveScreenHtml());
       setChallengerMessages([...messages]);
       setChallengerDesignPhase('idle');
-      challengerSessionRef.current = createChatSession([...messages], settings.raceModel, settings.customApiKey);
+      challengerSessionRef.current = createChatSession([...messages], settings.raceModel, settings.customApiKey, settings.enableThinking);
     } else {
       setChallengerHtmlCode('');
       setChallengerMessages([]);
@@ -648,6 +670,7 @@ function App() {
           activeTab={landingTab} 
           onTabChange={setLandingTab} 
           onOpenSettings={() => setShowSettings(true)} 
+          onOpenStudio={() => handleStartProject('', undefined, 'studio')}
         />
         <NotificationSystem notifications={notifications} onDismiss={removeNotification} />
         <LandingPage 
@@ -680,6 +703,7 @@ function App() {
             </div>
           </div>
           <div className="flex items-center gap-2">
+             <button onClick={() => handleStartProject('', undefined, 'studio')} className="hidden md:flex p-2 hover:bg-gray-100 rounded-lg text-black border-2 border-transparent hover:border-black hover:shadow-[2px_2px_0px_0px_black] transition-all" title="Studio Mode"><BoxSelect size={18} strokeWidth={2.5} /></button>
             <button onClick={() => setShowSettings(true)} className="p-2 hover:bg-[#A3E635] rounded-lg text-black border-2 border-transparent hover:border-black hover:shadow-[2px_2px_0px_0px_black] transition-all"><Settings size={18} strokeWidth={2.5} /></button>
           </div>
         </div>

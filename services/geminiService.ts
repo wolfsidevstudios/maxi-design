@@ -35,7 +35,12 @@ RULES:
 When updating a design, return the FULL updated output (Theme + HTML).
 `;
 
-export const createChatSession = (history: Message[] = [], model: string = 'gemini-3-pro-preview', apiKey?: string): Chat => {
+export const createChatSession = (
+  history: Message[] = [], 
+  model: string = 'gemini-3-pro-preview', 
+  apiKey?: string,
+  enableThinking: boolean = true
+): Chat => {
   // Initialize Gemini Client dynamically with custom key or default env key
   const effectiveKey = apiKey || process.env.API_KEY;
   const ai = new GoogleGenAI({ apiKey: effectiveKey });
@@ -68,6 +73,8 @@ export const createChatSession = (history: Message[] = [], model: string = 'gemi
     config: {
       systemInstruction: SYSTEM_INSTRUCTION,
       temperature: 0.7,
+      // Apply thinking budget if enabled
+      ...(enableThinking ? { thinkingConfig: { thinkingBudget: 1024 } } : {})
     },
     history: geminiHistory
   });

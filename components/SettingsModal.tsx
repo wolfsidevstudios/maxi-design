@@ -25,6 +25,15 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ settings, onSave, onClose
     onClose();
   };
 
+  const ToggleSwitch = ({ checked, onChange }: { checked: boolean; onChange: (v: boolean) => void }) => (
+    <button 
+      onClick={() => onChange(!checked)}
+      className={`w-12 h-6 rounded-full border-2 border-black relative transition-colors ${checked ? 'bg-[#A3E635]' : 'bg-gray-200'}`}
+    >
+      <div className={`w-4 h-4 rounded-full bg-white border-2 border-black absolute top-1/2 -translate-y-1/2 transition-all shadow-sm ${checked ? 'left-[26px]' : 'left-[2px]'}`}></div>
+    </button>
+  );
+
   return (
     <div className="fixed inset-0 z-50 bg-[#FDFBD4] flex flex-col animate-in fade-in slide-in-from-bottom-4 duration-300">
       
@@ -76,28 +85,61 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ settings, onSave, onClose
               </div>
             </div>
 
-            {/* Race Model Selection */}
-            <div className="space-y-4">
-              <label className="text-base font-black text-black uppercase tracking-widest flex items-center gap-2 border-b-2 border-black pb-2">
-                <Trophy size={20} /> Race Opponent
-              </label>
-              <div className="relative">
-                <select
-                  value={localSettings.raceModel}
-                  onChange={(e) => setLocalSettings({ ...localSettings, raceModel: e.target.value as ModelType })}
-                  className="w-full p-4 bg-white border-2 border-black rounded-xl font-bold appearance-none shadow-[4px_4px_0px_0px_black] outline-none text-lg cursor-pointer hover:translate-x-[-1px] hover:translate-y-[-1px] transition-transform"
-                >
-                  {models.filter(m => m.id !== localSettings.activeModel).map(m => (
-                    <option key={m.id} value={m.id}>{m.name}</option>
-                  ))}
-                </select>
-                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
-                  <Zap size={24} fill="black" />
+            {/* Config & Race Opponent */}
+            <div className="space-y-8">
+              {/* Generation Settings */}
+              <div className="space-y-4">
+                <label className="text-base font-black text-black uppercase tracking-widest flex items-center gap-2 border-b-2 border-black pb-2">
+                  <Zap size={20} /> Capabilities
+                </label>
+                
+                <div className="bg-white p-4 rounded-xl border-2 border-black shadow-[4px_4px_0px_0px_black] space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="font-bold text-black">Enable Thinking</div>
+                      <div className="text-xs text-gray-500 font-medium">Use model reasoning budget (Costlier, better quality)</div>
+                    </div>
+                    <ToggleSwitch 
+                      checked={localSettings.enableThinking} 
+                      onChange={(v) => setLocalSettings(prev => ({ ...prev, enableThinking: v }))} 
+                    />
+                  </div>
+                  
+                  <div className="w-full h-px bg-gray-100"></div>
+
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="font-bold text-black">Real-time Code Gen</div>
+                      <div className="text-xs text-gray-500 font-medium">Stream code as it's generated</div>
+                    </div>
+                    <ToggleSwitch 
+                      checked={localSettings.enableStreaming} 
+                      onChange={(v) => setLocalSettings(prev => ({ ...prev, enableStreaming: v }))} 
+                    />
+                  </div>
                 </div>
               </div>
-              <p className="text-sm font-medium text-gray-600 leading-relaxed bg-white/40 p-4 rounded-xl border-2 border-black/5">
-                The Race Opponent is used in "Split View" mode to challenge the primary model. Compare outputs side-by-side to find the best design.
-              </p>
+
+              {/* Race Opponent */}
+              <div className="space-y-4">
+                <label className="text-base font-black text-black uppercase tracking-widest flex items-center gap-2 border-b-2 border-black pb-2">
+                  <Trophy size={20} /> Race Opponent
+                </label>
+                <div className="relative">
+                  <select
+                    value={localSettings.raceModel}
+                    onChange={(e) => setLocalSettings({ ...localSettings, raceModel: e.target.value as ModelType })}
+                    className="w-full p-4 bg-white border-2 border-black rounded-xl font-bold appearance-none shadow-[4px_4px_0px_0px_black] outline-none text-lg cursor-pointer hover:translate-x-[-1px] hover:translate-y-[-1px] transition-transform"
+                  >
+                    {models.filter(m => m.id !== localSettings.activeModel).map(m => (
+                      <option key={m.id} value={m.id}>{m.name}</option>
+                    ))}
+                  </select>
+                  <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                    <Zap size={24} fill="black" />
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 

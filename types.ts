@@ -26,6 +26,8 @@ export interface AppSettings {
   activeModel: ModelType;
   raceModel: ModelType;
   customApiKey?: string;
+  enableThinking: boolean;
+  enableStreaming: boolean;
 }
 
 export interface Screen {
