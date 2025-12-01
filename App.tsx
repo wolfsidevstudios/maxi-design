@@ -7,6 +7,7 @@ import SettingsModal from './components/SettingsModal';
 import Navbar from './components/Navbar';
 import PrivacyPolicy from './components/PrivacyPolicy';
 import TermsOfService from './components/TermsOfService';
+import NotificationSystem, { NotificationItem } from './components/Notification';
 import { 
   createChatSession, 
   streamResponse 
@@ -75,6 +76,20 @@ function App() {
       };
     }
   });
+
+  // Notifications
+  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
+
+  const addNotification = (type: 'error' | 'warning' | 'success' | 'info', title: string, message: string, actionLabel?: string, onAction?: () => void) => {
+    const id = Date.now().toString() + Math.random().toString();
+    setNotifications(prev => [...prev, {
+      id, type, title, message, actionLabel, onAction, duration: type === 'error' ? 8000 : 5000
+    }]);
+  };
+
+  const removeNotification = (id: string) => {
+    setNotifications(prev => prev.filter(n => n.id !== id));
+  };
 
   // Persist Global Settings
   useEffect(() => {
@@ -172,11 +187,16 @@ function App() {
   // Init Sessions
   useEffect(() => {
     if (viewMode === 'editor') {
-      if (!chatSessionRef.current) {
-        chatSessionRef.current = createChatSession(messages, settings.activeModel, settings.customApiKey);
-      }
-      if (isRaceMode && !challengerSessionRef.current) {
-        challengerSessionRef.current = createChatSession(challengerMessages, settings.raceModel, settings.customApiKey);
+      try {
+        if (!chatSessionRef.current) {
+          chatSessionRef.current = createChatSession(messages, settings.activeModel, settings.customApiKey);
+        }
+        if (isRaceMode && !challengerSessionRef.current) {
+          challengerSessionRef.current = createChatSession(challengerMessages, settings.raceModel, settings.customApiKey);
+        }
+      } catch (e: any) {
+        // Handle init error (rare but possible if API key is malformed)
+        addNotification('error', 'Initialization Error', 'Failed to initialize AI. Please check your API key.');
       }
     }
   }, [viewMode, isRaceMode, settings.activeModel, settings.raceModel, settings.customApiKey]);
@@ -410,7 +430,8 @@ function App() {
       session: Chat, 
       setHtml: (html: string) => void,
       setPhase: React.Dispatch<React.SetStateAction<'idle' | 'theming' | 'coding'>>,
-      isMain: boolean
+      isMain: boolean,
+      modelName: string
     ) => {
       let accumulatedText = '';
       const startTime = Date.now();
@@ -459,8 +480,36 @@ function App() {
              }, MIN_THEME_TIME - elapsed);
           }
         });
-      } catch (e) {
+      } catch (e: any) {
         console.error("Stream error", e);
+        const errorMsg = e.message || e.toString();
+        
+        // Handle specific API errors
+        if (errorMsg.includes('429') || errorMsg.includes('quota') || errorMsg.includes('RESOURCE_EXHAUSTED')) {
+          addNotification(
+            'error',
+            'Out of Credits',
+            `You have exceeded the quota for ${modelName}. Please check your API usage or switch models.`,
+            'Settings',
+            () => setShowSettings(true)
+          );
+        } else if (errorMsg.includes('API key') || errorMsg.includes('403')) {
+           addNotification(
+            'error',
+            'Authentication Failed',
+            'Invalid API Key. Please update your key in settings.',
+            'Settings',
+            () => setShowSettings(true)
+          );
+        } else {
+           addNotification(
+            'error',
+            'Generation Failed',
+            `An error occurred with ${modelName}. Please try again.`
+          );
+        }
+        
+        setPhase('idle');
       }
     };
 
@@ -475,7 +524,7 @@ function App() {
       };
 
       promises.push(
-        processStream(chatSessionRef.current, setMainHtml, setDesignPhase, true)
+        processStream(chatSessionRef.current, setMainHtml, setDesignPhase, true, settings.activeModel)
           .then(() => {
             setMessages(prev => [...prev, {
               id: (Date.now() + 1).toString(),
@@ -494,7 +543,7 @@ function App() {
       }
       
       promises.push(
-        processStream(challengerSessionRef.current, setChallengerHtmlCode, setChallengerDesignPhase, false)
+        processStream(challengerSessionRef.current, setChallengerHtmlCode, setChallengerDesignPhase, false, settings.raceModel)
           .then(() => {
              setChallengerMessages(prev => [...prev, {
                 id: (Date.now() + 2).toString(),
@@ -506,7 +555,7 @@ function App() {
       );
     }
 
-    await Promise.all(promises);
+    await Promise.allSettled(promises);
     setIsGenerating(false);
     setDesignPhase('idle');
     setChallengerDesignPhase('idle');
@@ -609,6 +658,8 @@ function App() {
           onOpenSettings={() => setShowSettings(true)} 
         />
 
+        <NotificationSystem notifications={notifications} onDismiss={removeNotification} />
+
         <LandingPage 
           view={landingTab}
           onStartProject={handleStartProject} 
@@ -634,6 +685,9 @@ function App() {
   return (
     <div className="flex h-screen w-full overflow-hidden bg-[#FDFBD4] font-sans">
       
+      {/* Global Notifications (Editor) */}
+      <NotificationSystem notifications={notifications} onDismiss={removeNotification} />
+
       {/* Settings Modal (Editor Context) */}
       {showSettings && (
         <SettingsModal 

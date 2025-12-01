@@ -46,7 +46,11 @@ import {
   StickyNote,
   Monitor,
   Paperclip,
-  MousePointerClick
+  MousePointerClick,
+  AlertTriangle,
+  XCircle,
+  Info,
+  ShieldAlert
 } from 'lucide-react';
 
 export {
@@ -95,5 +99,9 @@ export {
   StickyNote,
   Monitor,
   Paperclip,
-  MousePointerClick
+  MousePointerClick,
+  AlertTriangle,
+  XCircle,
+  Info,
+  ShieldAlert
 };
