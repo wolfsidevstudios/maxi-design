@@ -1,5 +1,5 @@
 
-import { GoogleGenAI, Chat, Content } from "@google/genai";
+import { GoogleGenAI, Chat, Content, Part } from "@google/genai";
 import { Message } from "../types";
 
 const SYSTEM_INSTRUCTION = `
@@ -38,10 +38,27 @@ export const createChatSession = (history: Message[] = [], model: string = 'gemi
   const ai = new GoogleGenAI({ apiKey: effectiveKey });
 
   // Convert app Message format to Gemini Content format
-  const geminiHistory: Content[] = history.map(msg => ({
-    role: msg.role,
-    parts: [{ text: msg.content }]
-  }));
+  const geminiHistory: Content[] = history.map(msg => {
+    const parts: Part[] = [{ text: msg.content }];
+    
+    if (msg.attachments) {
+      msg.attachments.forEach(att => {
+        // Extract base64 data, removing header if present
+        const base64Data = att.content.split(',')[1] || att.content;
+        parts.push({
+          inlineData: {
+            mimeType: att.mimeType,
+            data: base64Data
+          }
+        });
+      });
+    }
+
+    return {
+      role: msg.role,
+      parts: parts
+    };
+  });
 
   return ai.chats.create({
     model: model, 
@@ -53,9 +70,23 @@ export const createChatSession = (history: Message[] = [], model: string = 'gemi
   });
 };
 
-export const streamResponse = async (chat: Chat, message: string, onChunk: (text: string) => void) => {
+export const streamResponse = async (chat: Chat, message: string, attachments: Message['attachments'] = [], onChunk: (text: string) => void) => {
   try {
-    const result = await chat.sendMessageStream({ message });
+    const parts: Part[] = [{ text: message }];
+    
+    if (attachments && attachments.length > 0) {
+      attachments.forEach(att => {
+         const base64Data = att.content.split(',')[1] || att.content;
+         parts.push({
+            inlineData: {
+               mimeType: att.mimeType,
+               data: base64Data
+            }
+         });
+      });
+    }
+
+    const result = await chat.sendMessageStream({ message: parts });
     
     for await (const chunk of result) {
       if (chunk.text) {

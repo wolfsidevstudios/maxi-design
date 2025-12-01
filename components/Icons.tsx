@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { 
   MessageSquare, 
@@ -34,7 +35,17 @@ import {
   Home,
   Grid,
   Plus,
-  Key
+  Key,
+  ChevronDown,
+  Layers,
+  Cpu,
+  Globe,
+  Download,
+  FileImage,
+  PlusSquare,
+  StickyNote,
+  Monitor,
+  Paperclip
 } from 'lucide-react';
 
 export {
@@ -62,7 +73,7 @@ export {
   CheckCircle2, 
   CircleDashed, 
   Wand2, 
-  Trash2,
+  Trash2, 
   Settings,
   Trophy,
   Zap,
@@ -72,5 +83,15 @@ export {
   Home,
   Grid,
   Plus,
-  Key
+  Key,
+  ChevronDown,
+  Layers,
+  Cpu,
+  Globe,
+  Download,
+  FileImage,
+  PlusSquare,
+  StickyNote,
+  Monitor,
+  Paperclip
 };

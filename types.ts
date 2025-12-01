@@ -5,6 +5,11 @@ export interface Message {
   content: string;
   timestamp: number;
   isThinking?: boolean;
+  attachments?: {
+    type: 'image';
+    content: string; // Base64 string
+    mimeType: string;
+  }[];
 }
 
 export interface ThemeSettings {
@@ -23,12 +28,19 @@ export interface AppSettings {
   customApiKey?: string;
 }
 
+export interface Screen {
+  id: string;
+  name: string;
+  html: string;
+}
+
 export interface ProjectData {
   id: string;
   name: string;
   lastEdited: number;
   messages: Message[];
-  htmlCode: string;
+  screens: Screen[];
+  activeScreenId: string;
   theme: ThemeSettings;
   thumbnail?: string;
   settings?: AppSettings;
