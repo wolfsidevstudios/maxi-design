@@ -51,7 +51,7 @@ import {
   MousePointerClick,
   BoxSelect
 } from './components/Icons';
-import { Message, ThemeSettings, ViewMode, ProjectData, AppSettings, Screen } from './types';
+import { Message, ThemeSettings, ViewMode, ProjectData, AppSettings, Screen, ModelType } from './types';
 import { Chat } from '@google/genai';
 import JSZip from 'jszip';
 
@@ -65,12 +65,23 @@ function App() {
   const [settings, setSettings] = useState<AppSettings>(() => {
     try {
       const saved = localStorage.getItem('sleek_settings');
-      return saved ? {
-        ...JSON.parse(saved),
-        // Ensure new settings have defaults if not in localStorage
-        enableThinking: JSON.parse(saved).enableThinking ?? true,
-        enableStreaming: JSON.parse(saved).enableStreaming ?? true
-      } : {
+      if (saved) {
+         const parsed = JSON.parse(saved);
+         // VALIDATION: Ensure the loaded model is valid. If not, reset to default.
+         // This prevents 404 errors if a deprecated model was saved.
+         const validModels: ModelType[] = ['gemini-3-pro-preview', 'gemini-2.5-flash', 'gemini-flash-lite-latest'];
+         const activeModel = validModels.includes(parsed.activeModel) ? parsed.activeModel : 'gemini-3-pro-preview';
+         const raceModel = validModels.includes(parsed.raceModel) ? parsed.raceModel : 'gemini-2.5-flash';
+
+         return {
+            ...parsed,
+            activeModel,
+            raceModel,
+            enableThinking: parsed.enableThinking ?? true,
+            enableStreaming: parsed.enableStreaming ?? true
+         };
+      }
+      return {
         activeModel: 'gemini-3-pro-preview',
         raceModel: 'gemini-2.5-flash',
         customApiKey: '',

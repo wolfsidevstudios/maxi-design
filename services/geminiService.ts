@@ -68,13 +68,20 @@ export const createChatSession = (
     };
   });
 
+  // Determine if we should apply thinking config
+  // The system instructions state Thinking is for 2.5 series. 
+  // We check for '2.5' or '3' (as some previews might support it, but being safe with 2.5 primarily)
+  const supportsThinking = model.includes('2.5') || model.includes('3-pro');
+  const shouldUseThinking = enableThinking && supportsThinking;
+
   return ai.chats.create({
     model: model, 
     config: {
       systemInstruction: SYSTEM_INSTRUCTION,
-      temperature: 0.7,
+      // Only set temperature if NOT using thinking, as thinking models manage their own sampling
+      ...(!shouldUseThinking ? { temperature: 0.7 } : {}),
       // Apply thinking budget if enabled
-      ...(enableThinking ? { thinkingConfig: { thinkingBudget: 1024 } } : {})
+      ...(shouldUseThinking ? { thinkingConfig: { thinkingBudget: 1024 } } : {})
     },
     history: geminiHistory
   });
@@ -82,9 +89,10 @@ export const createChatSession = (
 
 export const streamResponse = async (chat: Chat, message: string, attachments: Message['attachments'] = [], onChunk: (text: string) => void) => {
   try {
-    const parts: Part[] = [{ text: message }];
+    let msgPayload: string | { parts: Part[] } | Part[] = message;
     
     if (attachments && attachments.length > 0) {
+      const parts: Part[] = [{ text: message }];
       attachments.forEach(att => {
          const base64Data = att.content.split(',')[1] || att.content;
          parts.push({
@@ -94,10 +102,13 @@ export const streamResponse = async (chat: Chat, message: string, attachments: M
             }
          });
       });
+      // Wrap in parts array for multipart message
+      msgPayload = parts;
     }
 
-    // Explicitly cast the message payload to avoid type issues with multipart messages
-    const result = await chat.sendMessageStream({ message: parts } as any);
+    // Use 'as any' to bypass strict type checking which might not perfectly match the dynamic payload structure
+    // allowing both string and Part[] to be passed correctly to the underlying SDK
+    const result = await chat.sendMessageStream({ message: msgPayload as any });
     
     for await (const chunk of result) {
       if (chunk.text) {
