@@ -243,7 +243,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ view, onStartProject, project
           </div>
 
           {/* HOW IT WORKS SECTION */}
-          <div className="w-full py-24 px-6 max-w-6xl mx-auto">
+          <div id="how-it-works-section" className="w-full py-24 px-6 max-w-6xl mx-auto">
              <div className="text-center mb-20">
                 <h2 className="text-4xl md:text-5xl font-display font-black text-black uppercase tracking-tight mb-4">
                    From Idea to App
