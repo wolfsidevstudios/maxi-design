@@ -45,7 +45,8 @@ import {
   PlusSquare,
   StickyNote,
   Monitor,
-  Paperclip
+  Paperclip,
+  MousePointerClick
 } from 'lucide-react';
 
 export {
@@ -93,5 +94,6 @@ export {
   PlusSquare,
   StickyNote,
   Monitor,
-  Paperclip
+  Paperclip,
+  MousePointerClick
 };

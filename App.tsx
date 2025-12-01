@@ -43,7 +43,8 @@ import {
   Trash2,
   Download,
   Paperclip,
-  X
+  X,
+  MousePointerClick
 } from './components/Icons';
 import { Message, ThemeSettings, ViewMode, ProjectData, AppSettings, Screen } from './types';
 import { Chat } from '@google/genai';
@@ -99,7 +100,6 @@ function App() {
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   // Design State (Main)
-  // htmlCode is now derived from the active screen
   const [zoom, setZoom] = useState(0.7);
   const [theme, setTheme] = useState<ThemeSettings>({
     fontBody: 'Inter',
@@ -110,10 +110,14 @@ function App() {
   });
 
   // Canvas Tools State
-  const [activeTool, setActiveTool] = useState<'select' | 'pan'>('select');
+  const [activeTool, setActiveTool] = useState<'select' | 'pan' | 'edit'>('select');
   const [panPosition, setPanPosition] = useState({ x: 0, y: 0 });
   const [isPanning, setIsPanning] = useState(false);
   const lastMousePos = useRef({ x: 0, y: 0 });
+  
+  // Edit Tool State
+  const [selectedElement, setSelectedElement] = useState<{tagName: string, snippet: string, textContent: string} | null>(null);
+  const [editInputValue, setEditInputValue] = useState('');
 
   // Status State
   const [statusSteps, setStatusSteps] = useState({
@@ -163,6 +167,26 @@ function App() {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isGenerating]);
 
+  // Listen for Element Clicks from Iframe
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data.type === 'ELEMENT_CLICKED') {
+        setSelectedElement(event.data.payload);
+        // Force focus to edit input
+        setTimeout(() => document.getElementById('edit-input-pill')?.focus(), 100);
+      }
+    };
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, []);
+
+  // Clear selected element when tool changes
+  useEffect(() => {
+    if (activeTool !== 'edit') {
+      setSelectedElement(null);
+    }
+  }, [activeTool]);
+
   // Active Screen HTML Accessor
   const getActiveScreenHtml = () => {
      return screens.find(s => s.id === activeScreenId)?.html || '';
@@ -182,10 +206,6 @@ function App() {
     
     // Initial message construction
     const initialMessages: Message[] = [];
-    if (referenceImage) {
-      // If there's a reference image, we add it to the message context immediately
-       // But we won't add it to visible messages yet to avoid duplication with the prompt send
-    }
 
     const newProject: ProjectData = {
       id: newId,
@@ -218,6 +238,8 @@ function App() {
     setZoom(0.6); // Slightly smaller for potentially split view
     setIsRaceMode(false); // Default to normal mode
     setAttachedImage(referenceImage || null);
+    setSelectedElement(null);
+    setActiveTool('select');
 
     // Initialize session
     chatSessionRef.current = createChatSession([], settings.activeModel, settings.customApiKey);
@@ -251,6 +273,8 @@ function App() {
     setPanPosition({ x: 0, y: 0 });
     setZoom(0.7);
     setIsRaceMode(false); // Reset race mode on load
+    setSelectedElement(null);
+    setActiveTool('select');
 
     chatSessionRef.current = createChatSession(
       project.messages, 
@@ -357,6 +381,8 @@ function App() {
     }
     
     setInputValue('');
+    setEditInputValue(''); // Clear edit input
+    setSelectedElement(null); // Clear selection
     setAttachedImage(null); // Clear attachment after sending
     setIsGenerating(true);
     setStatusSteps({ analyzed: false, planned: false, generating: false });
@@ -466,6 +492,25 @@ function App() {
     setIsGenerating(false);
     setDesignPhase('idle');
     setChallengerDesignPhase('idle');
+  };
+
+  const handleEditSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editInputValue.trim()) return;
+
+    let prompt = editInputValue;
+    if (selectedElement) {
+      prompt = `EDIT REQUEST: I have selected the following element: 
+      
+      Element Tag: <${selectedElement.tagName}>
+      HTML Snippet: \`${selectedElement.snippet}\`
+      
+      User Request: ${editInputValue}
+      
+      Please modify the code to reflect this change specifically for this element or its container as appropriate.`;
+    }
+
+    handleSendMessageReal(prompt);
   };
 
   const handleWinRace = (winner: 'main' | 'challenger') => {
@@ -857,6 +902,13 @@ function App() {
                 <MousePointer2 size={18} strokeWidth={2.5} />
              </button>
              <button 
+               onClick={() => setActiveTool('edit')}
+               className={`p-2 rounded-lg border-2 transition-all ${activeTool === 'edit' ? 'bg-[#A3E635] text-black border-black shadow-[2px_2px_0px_0px_black]' : 'border-transparent text-gray-600 hover:bg-gray-100 hover:border-black'}`} 
+               title="Edit Element"
+             >
+                <MousePointerClick size={18} strokeWidth={2.5} />
+             </button>
+             <button 
                onClick={() => setActiveTool('pan')}
                className={`p-2 rounded-lg border-2 transition-all ${activeTool === 'pan' ? 'bg-[#FF6B4A] text-white border-black shadow-[2px_2px_0px_0px_black]' : 'border-transparent text-gray-600 hover:bg-gray-100 hover:border-black'}`} 
                title="Pan"
@@ -868,6 +920,36 @@ function App() {
              <span className="text-sm font-bold w-12 text-center text-black tabular-nums">{Math.round(zoom * 100)}%</span>
              <button className="p-2 hover:bg-gray-100 rounded-lg text-black transition-colors border-2 border-transparent hover:border-black" onClick={() => setZoom(z => Math.min(2.0, z + 0.1))}><ZoomIn size={18} strokeWidth={2.5} /></button>
           </div>
+
+          {/* Edit Mode Pill Input */}
+          {activeTool === 'edit' && (
+             <div className="absolute bottom-24 z-50 animate-in fade-in slide-in-from-bottom-4">
+                <form 
+                  onSubmit={handleEditSubmit}
+                  className="flex items-center gap-2 bg-white p-2 rounded-full border-2 border-black shadow-[4px_4px_0px_0px_black] transition-all hover:scale-105 focus-within:scale-105"
+                >
+                  <div className="pl-3 pr-2 font-black text-xs uppercase tracking-wider text-[#A3E635] bg-black py-1 rounded">
+                     {selectedElement ? selectedElement.tagName : 'Select'}
+                  </div>
+                  <input
+                    id="edit-input-pill"
+                    type="text"
+                    value={editInputValue}
+                    onChange={(e) => setEditInputValue(e.target.value)}
+                    placeholder={selectedElement ? "Describe change..." : "Select an element first"}
+                    disabled={!selectedElement}
+                    className="bg-transparent outline-none w-64 text-sm font-medium px-1 disabled:opacity-50"
+                  />
+                  <button 
+                    type="submit"
+                    disabled={!selectedElement || !editInputValue.trim()}
+                    className="p-2 bg-[#FF6B4A] text-white rounded-full border-2 border-black hover:bg-[#FF5530] disabled:opacity-50 disabled:cursor-not-allowed shadow-[1px_1px_0px_0px_black] active:shadow-none active:translate-x-[1px] active:translate-y-[1px]"
+                  >
+                     <Send size={14} strokeWidth={3} />
+                  </button>
+                </form>
+             </div>
+          )}
 
           {/* Frames Container */}
           <div 
@@ -903,6 +985,7 @@ function App() {
                   htmlContent={getActiveScreenHtml()} 
                   scale={zoom} 
                   loadingPhase={designPhase}
+                  enableEditMode={activeTool === 'edit'}
                />
             </div>
 
@@ -926,6 +1009,7 @@ function App() {
                     htmlContent={challengerHtmlCode} 
                     scale={zoom} 
                     loadingPhase={challengerDesignPhase}
+                    // Edit mode only supported on main frame for now to avoid race condition/confusion
                  />
               </div>
             )}

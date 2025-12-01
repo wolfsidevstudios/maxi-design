@@ -1,13 +1,26 @@
-import React from 'react';
+
+import React, { useEffect, useRef } from 'react';
 
 interface MobileFrameProps {
   htmlContent: string;
   scale?: number;
   loadingPhase?: 'idle' | 'theming' | 'coding';
+  enableEditMode?: boolean;
 }
 
-const MobileFrame: React.FC<MobileFrameProps> = ({ htmlContent, scale = 1, loadingPhase = 'idle' }) => {
-  
+const MobileFrame: React.FC<MobileFrameProps> = ({ htmlContent, scale = 1, loadingPhase = 'idle', enableEditMode = false }) => {
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+
+  // Send message to iframe when edit mode changes
+  useEffect(() => {
+    if (iframeRef.current?.contentWindow) {
+      iframeRef.current.contentWindow.postMessage({
+        type: 'TOGGLE_EDIT_MODE',
+        enabled: enableEditMode
+      }, '*');
+    }
+  }, [enableEditMode]);
+
   // Construct the full document string for srcDoc
   // This ensures the iframe has the Tailwind script and correct structure immediately
   const docSource = `
@@ -21,10 +34,76 @@ const MobileFrame: React.FC<MobileFrameProps> = ({ htmlContent, scale = 1, loadi
           body { margin: 0; overflow-x: hidden; }
           /* Hide scrollbar for clean look */
           ::-webkit-scrollbar { width: 0px; background: transparent; }
+          
+          /* Edit Mode Highlight Class */
+          .maxi-highlight {
+            outline: 2px solid #3b82f6 !important;
+            outline-offset: -2px;
+            cursor: pointer !important;
+            background-color: rgba(59, 130, 246, 0.1);
+          }
         </style>
       </head>
       <body class="bg-gray-50 min-h-screen">
         ${htmlContent || '<div style="height: 100vh; display: flex; align-items: center; justify-content: center; color: #9CA3AF; font-family: sans-serif;">Waiting for code...</div>'}
+        
+        <script>
+          let isEditMode = false;
+          let highlightedElement = null;
+
+          window.addEventListener('message', (event) => {
+            if (event.data.type === 'TOGGLE_EDIT_MODE') {
+              isEditMode = event.data.enabled;
+              if (!isEditMode && highlightedElement) {
+                 highlightedElement.classList.remove('maxi-highlight');
+                 highlightedElement = null;
+              }
+            }
+          });
+
+          document.body.addEventListener('mouseover', (e) => {
+            if (!isEditMode) return;
+            e.stopPropagation();
+            
+            if (highlightedElement && highlightedElement !== e.target) {
+              highlightedElement.classList.remove('maxi-highlight');
+            }
+            
+            highlightedElement = e.target;
+            // Don't highlight the body itself usually
+            if (highlightedElement.tagName !== 'BODY' && highlightedElement.tagName !== 'HTML') {
+               highlightedElement.classList.add('maxi-highlight');
+            }
+          });
+
+          document.body.addEventListener('mouseout', (e) => {
+             if (!isEditMode) return;
+             if (e.target.classList.contains('maxi-highlight')) {
+               e.target.classList.remove('maxi-highlight');
+             }
+          });
+
+          document.body.addEventListener('click', (e) => {
+            if (!isEditMode) return;
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const target = e.target;
+            // Get simple selector or HTML snippet
+            const snippet = target.outerHTML;
+            const tagName = target.tagName.toLowerCase();
+            const textContent = target.textContent.substring(0, 50);
+            
+            window.parent.postMessage({
+              type: 'ELEMENT_CLICKED',
+              payload: {
+                tagName,
+                snippet,
+                textContent
+              }
+            }, '*');
+          });
+        </script>
       </body>
     </html>
   `;
@@ -91,6 +170,7 @@ const MobileFrame: React.FC<MobileFrameProps> = ({ htmlContent, scale = 1, loadi
 
         {/* Screen Content */}
         <iframe
+          ref={iframeRef}
           srcDoc={docSource}
           title="Mobile Preview"
           className="w-full h-full bg-white relative z-10 rounded-[36px]"
