@@ -52,7 +52,7 @@ const MobileFrame: React.FC<MobileFrameProps> = ({ htmlContent, scale = 1, loadi
         </style>
       </head>
       <body class="bg-gray-50 min-h-screen">
-        ${htmlContent || '<div style="height: 100vh; display: flex; align-items: center; justify-content: center; color: #9CA3AF; font-family: sans-serif;">Waiting for code...</div>'}
+        ${htmlContent || '<div style="height: 100vh; display: flex; align-items: center; justify-content: center; color: #9CA3AF; font-family: sans-serif;"></div>'}
         
         <script>
           let isEditMode = false;
@@ -96,9 +96,6 @@ const MobileFrame: React.FC<MobileFrameProps> = ({ htmlContent, scale = 1, loadi
                } else {
                   selectedElement.style[key] = value;
                }
-
-               // Notify parent of HTML change (debounced in real app, immediate here)
-               // Note: We'd need a way to serialize full HTML back to parent to save changes persistence
             }
 
             if (type === 'INSERT_ELEMENT' && selectedElement) {
@@ -166,9 +163,6 @@ const MobileFrame: React.FC<MobileFrameProps> = ({ htmlContent, scale = 1, loadi
               payload: styles
             }, '*');
           });
-          
-          // Helper to send full HTML back periodically or on specific triggers
-          // Not fully implemented for this demo to avoid infinite loops, but structure is here
         </script>
       </body>
     </html>
@@ -185,7 +179,7 @@ const MobileFrame: React.FC<MobileFrameProps> = ({ htmlContent, scale = 1, loadi
       }}
     >
       {/* Container with Neo-Brutalist Border */}
-      <div className={`relative w-full h-full bg-white rounded-[40px] overflow-hidden transition-all duration-700 border-[3px] border-black ${loadingPhase === 'theming' ? 'shadow-[8px_8px_0px_0px_rgba(96,165,250,0.4)]' : 'shadow-[8px_8px_0px_0px_rgba(0,0,0,0.15)]'}`}>
+      <div className={`relative w-full h-full bg-white rounded-[40px] overflow-hidden transition-all duration-700 border-[3px] border-black ${loadingPhase !== 'idle' ? 'shadow-[8px_8px_0px_0px_rgba(96,165,250,0.4)]' : 'shadow-[8px_8px_0px_0px_rgba(0,0,0,0.15)]'}`}>
         
         {/* Theming Gradient Border Animation */}
         {loadingPhase === 'theming' && (
@@ -196,7 +190,7 @@ const MobileFrame: React.FC<MobileFrameProps> = ({ htmlContent, scale = 1, loadi
           </div>
         )}
 
-        {/* Empty State / Loading Overlay */}
+        {/* Theming Overlay */}
         {loadingPhase === 'theming' && (
           <div className="absolute inset-0 z-40 bg-white flex flex-col items-center justify-center space-y-6">
               <div className="flex flex-col items-center space-y-6">
@@ -211,6 +205,32 @@ const MobileFrame: React.FC<MobileFrameProps> = ({ htmlContent, scale = 1, loadi
                  </div>
               </div>
           </div>
+        )}
+
+        {/* Coding Overlay */}
+        {loadingPhase === 'coding' && (
+          <div className="absolute inset-0 z-40 bg-white/90 backdrop-blur-sm flex flex-col items-center justify-center space-y-6 transition-opacity duration-300">
+              <div className="flex flex-col items-center space-y-6">
+                 <div className="relative w-24 h-24">
+                    <div className="absolute inset-0 bg-green-100 rounded-full animate-ping opacity-20 border-2 border-transparent"></div>
+                    <div className="absolute inset-2 bg-white rounded-full border-2 border-black flex items-center justify-center overflow-hidden">
+                       <div className="absolute bottom-0 w-full bg-[#A3E635] animate-[bounce_2s_infinite] h-full opacity-30"></div>
+                       <div className="w-8 h-8 rounded-full border-b-2 border-l-2 border-black animate-spin"></div>
+                    </div>
+                 </div>
+                 <div className="text-center space-y-2">
+                  <div className="text-xl font-display font-black text-black tracking-tight uppercase">Building Interface</div>
+                  <div className="text-xs font-bold text-gray-400 uppercase tracking-widest">Writing HTML & Tailwind</div>
+                 </div>
+              </div>
+          </div>
+        )}
+        
+        {/* Waiting / Empty State (only if idle and no html) */}
+        {loadingPhase === 'idle' && !htmlContent && (
+           <div className="absolute inset-0 z-10 flex items-center justify-center bg-gray-50 text-gray-400 font-bold uppercase tracking-wider text-sm pointer-events-none">
+              Waiting for code...
+           </div>
         )}
 
         {/* Screen Content */}
