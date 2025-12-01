@@ -1,9 +1,6 @@
+
 import { GoogleGenAI, Chat, Content } from "@google/genai";
 import { Message } from "../types";
-
-// Initialize Gemini Client
-// IMPORTANT: The API key is injected via process.env.API_KEY
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 const SYSTEM_INSTRUCTION = `
 You are an expert Frontend AI Engineer specializing in Mobile UI Design.
@@ -35,7 +32,11 @@ RULES:
 When updating a design, return the FULL updated output (Theme + HTML).
 `;
 
-export const createChatSession = (history: Message[] = [], model: string = 'gemini-3-pro-preview'): Chat => {
+export const createChatSession = (history: Message[] = [], model: string = 'gemini-3-pro-preview', apiKey?: string): Chat => {
+  // Initialize Gemini Client dynamically with custom key or default env key
+  const effectiveKey = apiKey || process.env.API_KEY;
+  const ai = new GoogleGenAI({ apiKey: effectiveKey });
+
   // Convert app Message format to Gemini Content format
   const geminiHistory: Content[] = history.map(msg => ({
     role: msg.role,

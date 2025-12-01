@@ -1,3 +1,4 @@
+
 export interface Message {
   id: string;
   role: 'user' | 'model';
@@ -19,6 +20,7 @@ export type ModelType = 'gemini-3-pro-preview' | 'gemini-2.5-flash' | 'gemini-2.
 export interface AppSettings {
   activeModel: ModelType;
   raceModel: ModelType;
+  customApiKey?: string;
 }
 
 export interface ProjectData {

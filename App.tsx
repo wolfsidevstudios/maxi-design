@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import LandingPage from './components/LandingPage';
 import MobileFrame from './components/MobileFrame';
@@ -47,7 +48,8 @@ function App() {
   const [showSettings, setShowSettings] = useState(false);
   const [settings, setSettings] = useState<AppSettings>({
     activeModel: 'gemini-3-pro-preview',
-    raceModel: 'gemini-2.5-flash'
+    raceModel: 'gemini-2.5-flash',
+    customApiKey: ''
   });
 
   // Projects State
@@ -131,13 +133,13 @@ function App() {
   useEffect(() => {
     if (viewMode === 'editor') {
       if (!chatSessionRef.current) {
-        chatSessionRef.current = createChatSession(messages, settings.activeModel);
+        chatSessionRef.current = createChatSession(messages, settings.activeModel, settings.customApiKey);
       }
       if (isRaceMode && !challengerSessionRef.current) {
-        challengerSessionRef.current = createChatSession(challengerMessages, settings.raceModel);
+        challengerSessionRef.current = createChatSession(challengerMessages, settings.raceModel, settings.customApiKey);
       }
     }
-  }, [viewMode, isRaceMode, settings.activeModel, settings.raceModel]);
+  }, [viewMode, isRaceMode, settings.activeModel, settings.raceModel, settings.customApiKey]);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -174,7 +176,8 @@ function App() {
     setZoom(0.6); // Slightly smaller for potentially split view
     setIsRaceMode(false); // Default to normal mode
 
-    chatSessionRef.current = createChatSession([], settings.activeModel);
+    // Initialize session
+    chatSessionRef.current = createChatSession([], settings.activeModel, settings.customApiKey);
 
     setViewMode('editor');
     
@@ -194,7 +197,11 @@ function App() {
     setZoom(0.7);
     setIsRaceMode(false); // Reset race mode on load
 
-    chatSessionRef.current = createChatSession(project.messages, project.settings?.activeModel || settings.activeModel);
+    chatSessionRef.current = createChatSession(
+      project.messages, 
+      project.settings?.activeModel || settings.activeModel, 
+      project.settings?.customApiKey || settings.customApiKey
+    );
 
     setViewMode('editor');
   };
@@ -240,7 +247,7 @@ function App() {
           
           // Theme Config
           const themeMatch = accumulatedText.match(/<theme_config>([\s\S]*?)<\/theme_config>/);
-          if (themeMatch && isMain) { // Only main model updates global theme for now to avoid conflict
+          if (themeMatch && isMain) { 
              try {
                 const themeJson = JSON.parse(themeMatch[1]);
                 setTheme(prev => ({ ...prev, ...themeJson }));
@@ -249,26 +256,15 @@ function App() {
           }
 
           // HTML Code Extraction (Robust Logic)
-          // 1. Remove theme config from the stream
           let cleanCode = accumulatedText.replace(/<theme_config>[\s\S]*?<\/theme_config>/, '').trim();
-          
-          // 2. Try to find markdown code block (```html ... ``` or just ``` ... ```)
-          // We allow partial blocks for streaming by not strictly enforcing the closing block in regex for extraction
-          // But we prefer complete blocks if available.
-          
           let extractedHtml = cleanCode;
           
           if (cleanCode.includes('```html')) {
              extractedHtml = cleanCode.split('```html')[1];
              if (extractedHtml.includes('```')) extractedHtml = extractedHtml.split('```')[0];
           } else if (cleanCode.includes('```')) {
-             // Fallback for generic code blocks
              extractedHtml = cleanCode.split('```')[1];
              if (extractedHtml.includes('```')) extractedHtml = extractedHtml.split('```')[0];
-          } else {
-             // 3. Fallback: If no markdown blocks yet, check if it looks like HTML
-             // If it starts with typical HTML tags, use it as is
-             // If it's just chatting text, we might display nothing or wait
           }
           
           extractedHtml = extractedHtml.trim();
@@ -311,9 +307,8 @@ function App() {
 
     // 2. Challenger Model (if Race Mode)
     if (isRaceMode) {
-      // Ensure session exists
       if (!challengerSessionRef.current) {
-        challengerSessionRef.current = createChatSession(challengerMessages, settings.raceModel);
+        challengerSessionRef.current = createChatSession(challengerMessages, settings.raceModel, settings.customApiKey);
       }
       
       promises.push(
@@ -341,9 +336,8 @@ function App() {
       setHtmlCode(challengerHtmlCode);
       setMessages(challengerMessages);
       // Re-init main session with challenger history to continue from there
-      chatSessionRef.current = createChatSession(challengerMessages, settings.activeModel);
+      chatSessionRef.current = createChatSession(challengerMessages, settings.activeModel, settings.customApiKey);
     }
-    // If main wins, we just keep going as is.
     
     setIsRaceMode(false);
     setChallengerHtmlCode('');
@@ -359,7 +353,7 @@ function App() {
       setChallengerHtmlCode(htmlCode);
       setChallengerMessages([...messages]);
       setChallengerDesignPhase('idle');
-      challengerSessionRef.current = createChatSession([...messages], settings.raceModel);
+      challengerSessionRef.current = createChatSession([...messages], settings.raceModel, settings.customApiKey);
     } else {
       // Cancel race: Clear challenger
       setChallengerHtmlCode('');
@@ -427,10 +421,19 @@ function App() {
         <SettingsModal 
           settings={settings} 
           onSave={(newSettings) => {
+            const prevSettings = settings;
             setSettings(newSettings);
-            // If we change active model, re-init chat
-            if (newSettings.activeModel !== settings.activeModel) {
-               chatSessionRef.current = createChatSession(messages, newSettings.activeModel);
+            
+            // Re-init main chat if model or API key changes
+            if (newSettings.activeModel !== prevSettings.activeModel || newSettings.customApiKey !== prevSettings.customApiKey) {
+               chatSessionRef.current = createChatSession(messages, newSettings.activeModel, newSettings.customApiKey);
+            }
+
+            // Re-init or create race chat if active
+            if (isRaceMode) {
+               if (newSettings.raceModel !== prevSettings.raceModel || newSettings.customApiKey !== prevSettings.customApiKey) {
+                   challengerSessionRef.current = createChatSession(challengerMessages, newSettings.raceModel, newSettings.customApiKey);
+               }
             }
           }} 
           onClose={() => setShowSettings(false)} 

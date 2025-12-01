@@ -33,7 +33,8 @@ import {
   X,
   Home,
   Grid,
-  Plus
+  Plus,
+  Key
 } from 'lucide-react';
 
 export {
@@ -70,5 +71,6 @@ export {
   X,
   Home,
   Grid,
-  Plus
+  Plus,
+  Key
 };
