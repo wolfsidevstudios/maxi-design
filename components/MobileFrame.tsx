@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React from 'react';
 
 interface MobileFrameProps {
   htmlContent: string;
@@ -7,52 +7,27 @@ interface MobileFrameProps {
 }
 
 const MobileFrame: React.FC<MobileFrameProps> = ({ htmlContent, scale = 1, loadingPhase = 'idle' }) => {
-  const iframeRef = useRef<HTMLIFrameElement>(null);
-  const [isIframeLoaded, setIsIframeLoaded] = useState(false);
-
-  // Robust content writing function
-  const updateIframeContent = () => {
-    const iframe = iframeRef.current;
-    if (!iframe) return;
-
-    const doc = iframe.contentDocument;
-    if (!doc) return;
-
-    // Only write if we have content or need to clear it
-    const contentToWrite = htmlContent || '';
-    
-    try {
-      doc.open();
-      doc.write(`
-        <!DOCTYPE html>
-        <html>
-          <head>
-            <meta charset="UTF-8" />
-            <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-            <script src="https://cdn.tailwindcss.com"></script>
-            <style>
-              body { margin: 0; overflow-x: hidden; }
-              /* Hide scrollbar for clean look */
-              ::-webkit-scrollbar { width: 0px; background: transparent; }
-            </style>
-          </head>
-          <body class="bg-gray-50 min-h-screen">
-            ${contentToWrite}
-          </body>
-        </html>
-      `);
-      doc.close();
-    } catch (e) {
-      console.error("Failed to write to iframe", e);
-    }
-  };
-
-  // Write content when HTML changes, BUT only if iframe is loaded
-  useEffect(() => {
-    if (isIframeLoaded) {
-      updateIframeContent();
-    }
-  }, [htmlContent, isIframeLoaded]);
+  
+  // Construct the full document string for srcDoc
+  // This ensures the iframe has the Tailwind script and correct structure immediately
+  const docSource = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <script src="https://cdn.tailwindcss.com"></script>
+        <style>
+          body { margin: 0; overflow-x: hidden; }
+          /* Hide scrollbar for clean look */
+          ::-webkit-scrollbar { width: 0px; background: transparent; }
+        </style>
+      </head>
+      <body class="bg-gray-50 min-h-screen">
+        ${htmlContent || '<div style="height: 100vh; display: flex; align-items: center; justify-content: center; color: #9CA3AF; font-family: sans-serif;">Waiting for code...</div>'}
+      </body>
+    </html>
+  `;
 
   return (
     <div 
@@ -82,10 +57,9 @@ const MobileFrame: React.FC<MobileFrameProps> = ({ htmlContent, scale = 1, loadi
         )}
 
         {/* Empty State / Loading Overlay */}
-        {(!htmlContent || loadingPhase === 'theming') && (
-          <div className="absolute inset-0 z-20 bg-white flex flex-col items-center justify-center space-y-6">
-            {loadingPhase === 'theming' ? (
-              <div className="flex flex-col items-center space-y-6 z-40">
+        {loadingPhase === 'theming' && (
+          <div className="absolute inset-0 z-40 bg-white flex flex-col items-center justify-center space-y-6">
+              <div className="flex flex-col items-center space-y-6">
                  {/* Design System Generation Animation */}
                  <div className="relative w-24 h-24">
                     {/* Central pulsing core */}
@@ -112,27 +86,15 @@ const MobileFrame: React.FC<MobileFrameProps> = ({ htmlContent, scale = 1, loadi
                   </div>
                  </div>
               </div>
-            ) : (
-              <div className="flex flex-col items-center text-gray-300 space-y-3">
-                 <div className="w-24 h-24 rounded-[24px] border-2 border-dashed border-gray-300 flex items-center justify-center bg-gray-50/50">
-                    <div className="w-10 h-10 rounded-lg bg-gray-200"></div>
-                 </div>
-                 <div className="text-sm font-bold uppercase tracking-widest text-gray-400">App Preview</div>
-              </div>
-            )}
           </div>
         )}
 
         {/* Screen Content */}
         <iframe
-          ref={iframeRef}
-          onLoad={() => {
-            setIsIframeLoaded(true);
-            updateIframeContent(); // Ensure content writes immediately on load
-          }}
+          srcDoc={docSource}
           title="Mobile Preview"
           className="w-full h-full bg-white relative z-10 rounded-[36px]"
-          sandbox="allow-scripts allow-same-origin" 
+          sandbox="allow-scripts allow-same-origin allow-forms" 
         />
       </div>
     </div>

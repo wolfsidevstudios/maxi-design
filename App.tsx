@@ -248,41 +248,41 @@ function App() {
              } catch (e) {}
           }
 
-          // HTML Code Extraction (Improved Logic)
-          // 1. Remove theme config
+          // HTML Code Extraction (Robust Logic)
+          // 1. Remove theme config from the stream
           let cleanCode = accumulatedText.replace(/<theme_config>[\s\S]*?<\/theme_config>/, '').trim();
           
-          // 2. Try to find markdown code block (either html or generic)
-          const codeBlockRegex = /```(?:html)?\s*([\s\S]*?)```/;
-          const match = cleanCode.match(codeBlockRegex);
+          // 2. Try to find markdown code block (```html ... ``` or just ``` ... ```)
+          // We allow partial blocks for streaming by not strictly enforcing the closing block in regex for extraction
+          // But we prefer complete blocks if available.
           
-          if (match && match[1]) {
-             cleanCode = match[1];
+          let extractedHtml = cleanCode;
+          
+          if (cleanCode.includes('```html')) {
+             extractedHtml = cleanCode.split('```html')[1];
+             if (extractedHtml.includes('```')) extractedHtml = extractedHtml.split('```')[0];
+          } else if (cleanCode.includes('```')) {
+             // Fallback for generic code blocks
+             extractedHtml = cleanCode.split('```')[1];
+             if (extractedHtml.includes('```')) extractedHtml = extractedHtml.split('```')[0];
           } else {
-             // 3. Fallback: If no markdown, but looks like HTML, use it.
-             // Sometimes the model might stream partials like "```html <div..." without closing it yet.
-             // We can try to extract from the first "```html" if present.
-             if (cleanCode.includes('```html')) {
-                cleanCode = cleanCode.split('```html')[1];
-             } else if (cleanCode.includes('```')) {
-                cleanCode = cleanCode.split('```')[1];
-             }
-             // If still contains trailing ```, remove it
-             if (cleanCode.includes('```')) {
-                cleanCode = cleanCode.split('```')[0];
-             }
+             // 3. Fallback: If no markdown blocks yet, check if it looks like HTML
+             // If it starts with typical HTML tags, use it as is
+             // If it's just chatting text, we might display nothing or wait
           }
+          
+          extractedHtml = extractedHtml.trim();
 
           const elapsed = Date.now() - startTime;
           if (elapsed > MIN_THEME_TIME) {
              setPhase('coding');
              if (isMain) setStatusSteps(prev => ({ ...prev, generating: true }));
-             setHtml(cleanCode);
+             if (extractedHtml) setHtml(extractedHtml);
           } else {
              setTimeout(() => {
                 setPhase('coding');
                 if (isMain) setStatusSteps(prev => ({ ...prev, generating: true }));
-                setHtml(cleanCode);
+                if (extractedHtml) setHtml(extractedHtml);
              }, MIN_THEME_TIME - elapsed);
           }
         });
@@ -319,8 +319,6 @@ function App() {
       promises.push(
         processStream(challengerSessionRef.current, setChallengerHtmlCode, setChallengerDesignPhase, false)
           .then(() => {
-             // Silence challenger in main chat, or add a log? 
-             // We'll just update its message history internally
              setChallengerMessages(prev => [...prev, {
                 id: (Date.now() + 2).toString(),
                 role: 'model',
