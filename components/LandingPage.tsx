@@ -9,9 +9,10 @@ interface LandingPageProps {
   projects: ProjectData[];
   onLoadProject: (project: ProjectData) => void;
   onDeleteProject: (projectId: string) => void;
+  onNavigate: (page: 'privacy' | 'terms') => void;
 }
 
-const LandingPage: React.FC<LandingPageProps> = ({ view, onStartProject, projects, onLoadProject, onDeleteProject }) => {
+const LandingPage: React.FC<LandingPageProps> = ({ view, onStartProject, projects, onLoadProject, onDeleteProject, onNavigate }) => {
   const [prompt, setPrompt] = useState('');
   const [referenceImage, setReferenceImage] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -294,9 +295,9 @@ const LandingPage: React.FC<LandingPageProps> = ({ view, onStartProject, project
                    <span className="font-bold text-2xl tracking-tight">Maxi Design</span>
                 </div>
                 <div className="flex gap-6 text-sm font-bold uppercase tracking-widest text-[#FDFBD4]/60">
-                   <a href="#" className="hover:text-white transition-colors">Privacy</a>
-                   <a href="#" className="hover:text-white transition-colors">Terms</a>
-                   <a href="#" className="hover:text-white transition-colors">Contact</a>
+                   <button onClick={() => onNavigate('privacy')} className="hover:text-white transition-colors">Privacy</button>
+                   <button onClick={() => onNavigate('terms')} className="hover:text-white transition-colors">Terms</button>
+                   <button onClick={() => window.open('mailto:hello@maxidesign.ai')} className="hover:text-white transition-colors">Contact</button>
                 </div>
                 <div className="text-sm font-medium text-[#FDFBD4]/40">
                    © 2024 Maxi Design AI

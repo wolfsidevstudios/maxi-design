@@ -46,7 +46,7 @@ export interface ProjectData {
   settings?: AppSettings;
 }
 
-export type ViewMode = 'landing' | 'editor';
+export type ViewMode = 'landing' | 'editor' | 'privacy' | 'terms';
 
 export interface GeneratedCodeState {
   code: string;

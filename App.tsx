@@ -5,6 +5,8 @@ import MobileFrame from './components/MobileFrame';
 import ThemeEditor from './components/ThemeEditor';
 import SettingsModal from './components/SettingsModal';
 import Navbar from './components/Navbar';
+import PrivacyPolicy from './components/PrivacyPolicy';
+import TermsOfService from './components/TermsOfService';
 import { 
   createChatSession, 
   streamResponse 
@@ -57,11 +59,27 @@ function App() {
   
   // Settings & Modal
   const [showSettings, setShowSettings] = useState(false);
-  const [settings, setSettings] = useState<AppSettings>({
-    activeModel: 'gemini-3-pro-preview',
-    raceModel: 'gemini-2.5-flash',
-    customApiKey: ''
+  const [settings, setSettings] = useState<AppSettings>(() => {
+    try {
+      const saved = localStorage.getItem('sleek_settings');
+      return saved ? JSON.parse(saved) : {
+        activeModel: 'gemini-3-pro-preview',
+        raceModel: 'gemini-2.5-flash',
+        customApiKey: ''
+      };
+    } catch (e) {
+      return {
+        activeModel: 'gemini-3-pro-preview',
+        raceModel: 'gemini-2.5-flash',
+        customApiKey: ''
+      };
+    }
   });
+
+  // Persist Global Settings
+  useEffect(() => {
+    localStorage.setItem('sleek_settings', JSON.stringify(settings));
+  }, [settings]);
 
   // Projects State
   const [projects, setProjects] = useState<ProjectData[]>(() => {
@@ -566,6 +584,21 @@ function App() {
     setIsPanning(false);
   };
 
+  // RENDER: Privacy Policy
+  if (viewMode === 'privacy') {
+    return (
+      <PrivacyPolicy onBack={() => setViewMode('landing')} />
+    );
+  }
+
+  // RENDER: Terms of Service
+  if (viewMode === 'terms') {
+    return (
+      <TermsOfService onBack={() => setViewMode('landing')} />
+    );
+  }
+
+  // RENDER: Landing (Home)
   if (viewMode === 'landing') {
     return (
       <div className="relative min-h-screen bg-[#FDFBD4]">
@@ -582,6 +615,7 @@ function App() {
           projects={projects}
           onLoadProject={handleLoadProject}
           onDeleteProject={handleDeleteProject}
+          onNavigate={(page) => setViewMode(page)}
         />
         
         {/* Settings Modal (Global in landing) */}
@@ -596,6 +630,7 @@ function App() {
     );
   }
 
+  // RENDER: Editor
   return (
     <div className="flex h-screen w-full overflow-hidden bg-[#FDFBD4] font-sans">
       
