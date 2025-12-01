@@ -20,7 +20,7 @@ export interface ThemeSettings {
   primaryColor: string;
 }
 
-export type ModelType = 'gemini-3-pro-preview' | 'gemini-2.5-flash' | 'gemini-2.5-pro-preview-09-2025';
+export type ModelType = 'gemini-3-pro-preview' | 'gemini-2.5-flash' | 'gemini-2.5-pro-preview-09-2025' | 'gemini-flash-lite-latest';
 
 export interface AppSettings {
   activeModel: ModelType;

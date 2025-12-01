@@ -50,7 +50,19 @@ import {
   AlertTriangle,
   XCircle,
   Info,
-  ShieldAlert
+  ShieldAlert,
+  Type,
+  Square,
+  Move,
+  AlignLeft,
+  AlignCenter,
+  AlignRight,
+  Bold,
+  Italic,
+  BoxSelect,
+  Eye,
+  Lock,
+  Copy
 } from 'lucide-react';
 
 export {
@@ -103,5 +115,17 @@ export {
   AlertTriangle,
   XCircle,
   Info,
-  ShieldAlert
+  ShieldAlert,
+  Type,
+  Square,
+  Move,
+  AlignLeft,
+  AlignCenter,
+  AlignRight,
+  Bold,
+  Italic,
+  BoxSelect,
+  Eye,
+  Lock,
+  Copy
 };

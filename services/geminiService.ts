@@ -89,7 +89,8 @@ export const streamResponse = async (chat: Chat, message: string, attachments: M
       });
     }
 
-    const result = await chat.sendMessageStream({ message: parts });
+    // Explicitly cast the message payload to avoid type issues with multipart messages
+    const result = await chat.sendMessageStream({ message: parts } as any);
     
     for await (const chunk of result) {
       if (chunk.text) {

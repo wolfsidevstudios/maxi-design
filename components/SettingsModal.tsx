@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { X, Zap, BrainCircuit, Trophy, CheckCircle2, Key, Settings as SettingsIcon } from './Icons';
 import { AppSettings, ModelType } from '../types';
@@ -13,9 +14,10 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ settings, onSave, onClose
   const [apiKeyVisible, setApiKeyVisible] = useState(false);
 
   const models: {id: ModelType; name: string; desc: string}[] = [
-    { id: 'gemini-3-pro-preview', name: 'Gemini 3.0 Pro', desc: 'Reasoning & Complex Tasks' },
-    { id: 'gemini-2.5-pro-preview-09-2025', name: 'Gemini 2.5 Pro', desc: 'Balanced Performance' },
-    { id: 'gemini-2.5-flash', name: 'Gemini 2.5 Flash', desc: 'High Speed & Efficiency' },
+    { id: 'gemini-3-pro-preview', name: 'Gemini 3.0 Pro', desc: 'Best for complex reasoning & coding' },
+    { id: 'gemini-2.5-pro-preview-09-2025', name: 'Gemini 2.5 Pro', desc: 'Powerful reasoning & long-form content' },
+    { id: 'gemini-2.5-flash', name: 'Gemini 2.5 Flash', desc: 'Fast, low-latency & high-frequency' },
+    { id: 'gemini-flash-lite-latest', name: 'Gemini 2.5 Flash Lite', desc: 'Cost-effective & lightweight' },
   ];
 
   const handleSave = () => {

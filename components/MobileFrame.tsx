@@ -6,9 +6,10 @@ interface MobileFrameProps {
   scale?: number;
   loadingPhase?: 'idle' | 'theming' | 'coding';
   enableEditMode?: boolean;
+  onHtmlUpdate?: (newHtml: string) => void;
 }
 
-const MobileFrame: React.FC<MobileFrameProps> = ({ htmlContent, scale = 1, loadingPhase = 'idle', enableEditMode = false }) => {
+const MobileFrame: React.FC<MobileFrameProps> = ({ htmlContent, scale = 1, loadingPhase = 'idle', enableEditMode = false, onHtmlUpdate }) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
   // Send message to iframe when edit mode changes
@@ -42,6 +43,12 @@ const MobileFrame: React.FC<MobileFrameProps> = ({ htmlContent, scale = 1, loadi
             cursor: pointer !important;
             background-color: rgba(59, 130, 246, 0.1);
           }
+          
+          .maxi-selected {
+            outline: 2px solid #FF6B4A !important;
+            outline-offset: -2px;
+            position: relative;
+          }
         </style>
       </head>
       <body class="bg-gray-50 min-h-screen">
@@ -50,14 +57,53 @@ const MobileFrame: React.FC<MobileFrameProps> = ({ htmlContent, scale = 1, loadi
         <script>
           let isEditMode = false;
           let highlightedElement = null;
+          let selectedElement = null;
+
+          function rgbToHex(rgb) {
+            if (!rgb || rgb === 'rgba(0, 0, 0, 0)') return '#ffffff';
+            if (rgb.startsWith('#')) return rgb;
+            const rgbValues = rgb.match(/\d+/g);
+            if (!rgbValues) return '#000000';
+            return '#' + ((1 << 24) + (parseInt(rgbValues[0]) << 16) + (parseInt(rgbValues[1]) << 8) + parseInt(rgbValues[2])).toString(16).slice(1);
+          }
 
           window.addEventListener('message', (event) => {
-            if (event.data.type === 'TOGGLE_EDIT_MODE') {
+            const { type, payload } = event.data;
+
+            if (type === 'TOGGLE_EDIT_MODE') {
               isEditMode = event.data.enabled;
-              if (!isEditMode && highlightedElement) {
-                 highlightedElement.classList.remove('maxi-highlight');
+              if (!isEditMode) {
+                 if (highlightedElement) highlightedElement.classList.remove('maxi-highlight');
+                 if (selectedElement) selectedElement.classList.remove('maxi-selected');
                  highlightedElement = null;
+                 selectedElement = null;
               }
+            }
+
+            if (type === 'UPDATE_STYLE' && selectedElement) {
+               // Apply style updates directly to the selected element
+               const { key, value } = payload;
+               
+               if (key === 'textContent') {
+                  // Only update text nodes to avoid destroying children
+                  if (selectedElement.childNodes.length === 1 && selectedElement.childNodes[0].nodeType === 3) {
+                     selectedElement.textContent = value;
+                  } else if (selectedElement.childNodes.length === 0) {
+                     selectedElement.textContent = value;
+                  }
+               } else if (key === 'className') {
+                  selectedElement.className = value;
+               } else {
+                  selectedElement.style[key] = value;
+               }
+
+               // Notify parent of HTML change (debounced in real app, immediate here)
+               // Note: We'd need a way to serialize full HTML back to parent to save changes persistence
+            }
+
+            if (type === 'INSERT_ELEMENT' && selectedElement) {
+               const { html } = payload;
+               selectedElement.insertAdjacentHTML('beforeend', html);
             }
           });
 
@@ -65,13 +111,12 @@ const MobileFrame: React.FC<MobileFrameProps> = ({ htmlContent, scale = 1, loadi
             if (!isEditMode) return;
             e.stopPropagation();
             
-            if (highlightedElement && highlightedElement !== e.target) {
+            if (highlightedElement && highlightedElement !== e.target && highlightedElement !== selectedElement) {
               highlightedElement.classList.remove('maxi-highlight');
             }
             
             highlightedElement = e.target;
-            // Don't highlight the body itself usually
-            if (highlightedElement.tagName !== 'BODY' && highlightedElement.tagName !== 'HTML') {
+            if (highlightedElement !== selectedElement && highlightedElement.tagName !== 'BODY' && highlightedElement.tagName !== 'HTML') {
                highlightedElement.classList.add('maxi-highlight');
             }
           });
@@ -88,21 +133,42 @@ const MobileFrame: React.FC<MobileFrameProps> = ({ htmlContent, scale = 1, loadi
             e.preventDefault();
             e.stopPropagation();
             
+            // Clear previous selection
+            if (selectedElement) {
+               selectedElement.classList.remove('maxi-selected');
+               selectedElement.removeAttribute('data-maxi-selected');
+            }
+
             const target = e.target;
-            // Get simple selector or HTML snippet
-            const snippet = target.outerHTML;
-            const tagName = target.tagName.toLowerCase();
-            const textContent = target.textContent.substring(0, 50);
+            selectedElement = target;
+            selectedElement.classList.add('maxi-selected');
+            selectedElement.setAttribute('data-maxi-selected', 'true');
+            
+            // Extract Computed Styles
+            const computed = window.getComputedStyle(selectedElement);
+            
+            const styles = {
+               tagName: selectedElement.tagName.toLowerCase(),
+               textContent: selectedElement.textContent.substring(0, 100), // Limit length
+               color: rgbToHex(computed.color),
+               backgroundColor: rgbToHex(computed.backgroundColor),
+               fontSize: computed.fontSize,
+               fontWeight: computed.fontWeight,
+               padding: computed.padding,
+               borderRadius: computed.borderRadius,
+               display: computed.display,
+               textAlign: computed.textAlign,
+               classes: selectedElement.className
+            };
             
             window.parent.postMessage({
-              type: 'ELEMENT_CLICKED',
-              payload: {
-                tagName,
-                snippet,
-                textContent
-              }
+              type: 'ELEMENT_SELECTED',
+              payload: styles
             }, '*');
           });
+          
+          // Helper to send full HTML back periodically or on specific triggers
+          // Not fully implemented for this demo to avoid infinite loops, but structure is here
         </script>
       </body>
     </html>
@@ -118,19 +184,14 @@ const MobileFrame: React.FC<MobileFrameProps> = ({ htmlContent, scale = 1, loadi
         transformOrigin: 'center center'
       }}
     >
-      {/* Container with Neo-Brutalist Border - Thick Black, Hard Shadow */}
+      {/* Container with Neo-Brutalist Border */}
       <div className={`relative w-full h-full bg-white rounded-[40px] overflow-hidden transition-all duration-700 border-[3px] border-black ${loadingPhase === 'theming' ? 'shadow-[8px_8px_0px_0px_rgba(96,165,250,0.4)]' : 'shadow-[8px_8px_0px_0px_rgba(0,0,0,0.15)]'}`}>
         
-        {/* Theming Gradient Border Animation - INSIDE the border */}
+        {/* Theming Gradient Border Animation */}
         {loadingPhase === 'theming' && (
           <div className="absolute inset-0 z-30 pointer-events-none rounded-[36px] overflow-hidden">
-             {/* Rotating Gradient Border */}
              <div className="absolute -inset-[100%] animate-[spin_4s_linear_infinite] bg-[conic-gradient(from_0deg,transparent_0deg,#60A5FA_90deg,transparent_180deg,#34D399_270deg,transparent_360deg)] opacity-50"></div>
-             
-             {/* Inner Mask to create the border effect */}
              <div className="absolute inset-[4px] bg-white rounded-[32px]"></div>
-             
-             {/* Inner Glow */}
              <div className="absolute inset-0 rounded-[36px] shadow-[inset_0_0_60px_rgba(59,130,246,0.1)]"></div>
           </div>
         )}
@@ -139,30 +200,14 @@ const MobileFrame: React.FC<MobileFrameProps> = ({ htmlContent, scale = 1, loadi
         {loadingPhase === 'theming' && (
           <div className="absolute inset-0 z-40 bg-white flex flex-col items-center justify-center space-y-6">
               <div className="flex flex-col items-center space-y-6">
-                 {/* Design System Generation Animation */}
                  <div className="relative w-24 h-24">
-                    {/* Central pulsing core */}
                     <div className="absolute inset-0 bg-blue-100 rounded-full animate-pulse opacity-50 border-2 border-black"></div>
                     <div className="absolute inset-4 bg-white rounded-full border-2 border-black flex items-center justify-center">
                        <div className="w-8 h-8 rounded-md bg-[#FF6B4A] border border-black animate-spin-slow"></div>
                     </div>
-                    
-                    {/* Orbiting particles */}
-                    <div className="absolute inset-0 animate-[spin_3s_linear_infinite]">
-                       <div className="w-3 h-3 bg-[#A3E635] border border-black rounded-full absolute top-0 left-1/2 -translate-x-1/2"></div>
-                    </div>
-                    <div className="absolute inset-2 animate-[spin_4s_linear_infinite_reverse]">
-                       <div className="w-3 h-3 bg-[#60A5FA] border border-black rounded-full absolute bottom-0 left-1/2 -translate-x-1/2"></div>
-                    </div>
                  </div>
-                 
                  <div className="text-center space-y-2">
                   <div className="text-xl font-display font-black text-black tracking-tight uppercase">Crafting Theme</div>
-                  <div className="flex gap-2 justify-center">
-                     <span className="text-[10px] px-2 py-1 bg-[#FDFBD4] border border-black rounded text-black font-bold uppercase tracking-wider">Type</span>
-                     <span className="text-[10px] px-2 py-1 bg-[#FDFBD4] border border-black rounded text-black font-bold uppercase tracking-wider">Color</span>
-                     <span className="text-[10px] px-2 py-1 bg-[#FDFBD4] border border-black rounded text-black font-bold uppercase tracking-wider">Shape</span>
-                  </div>
                  </div>
               </div>
           </div>
