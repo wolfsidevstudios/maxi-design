@@ -34,7 +34,8 @@ import {
   Trophy,
   Swords,
   BrainCircuit,
-  Zap
+  Zap,
+  Home
 } from './components/Icons';
 import { Message, ThemeSettings, ViewMode, ProjectData, AppSettings } from './types';
 import { Chat } from '@google/genai';
@@ -446,8 +447,12 @@ function App() {
         {/* Header */}
         <div className="h-16 border-b-2 border-black flex items-center justify-between px-4 bg-white shrink-0">
           <div className="flex items-center gap-3">
-            <button onClick={() => setViewMode('landing')} className="p-2 hover:bg-gray-100 rounded-lg text-black transition-colors border-2 border-transparent hover:border-black hover:shadow-[2px_2px_0px_0px_black]">
-               <ArrowLeft size={18} strokeWidth={2.5} />
+            <button 
+               onClick={() => setViewMode('landing')} 
+               className="p-2 hover:bg-gray-100 rounded-lg text-black transition-colors border-2 border-transparent hover:border-black hover:shadow-[2px_2px_0px_0px_black]"
+               title="Back to Home"
+            >
+               <Home size={18} strokeWidth={2.5} />
             </button>
             <div className="flex items-center gap-2">
                <div className="w-8 h-8 bg-[#FF6B4A] border-2 border-black flex items-center justify-center text-white font-black text-sm shadow-[2px_2px_0px_0px_black] rounded-md">M</div>

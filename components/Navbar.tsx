@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, Grid, Settings, Plus } from './Icons';
+import { Home, Grid, Settings } from './Icons';
 
 interface NavbarProps {
   activeTab: 'create' | 'projects';
@@ -14,8 +14,8 @@ const Navbar: React.FC<NavbarProps> = ({ activeTab, onTabChange, onOpenSettings 
         onClick={() => onTabChange('create')}
         className={`flex items-center gap-2 px-5 py-2.5 rounded-full border-2 transition-all font-black text-xs uppercase tracking-wider ${activeTab === 'create' ? 'bg-[#FF6B4A] text-white border-black shadow-[2px_2px_0px_0px_black]' : 'border-transparent text-gray-500 hover:text-black hover:bg-gray-100 hover:border-black'}`}
       >
-        <Plus size={16} strokeWidth={3} />
-        <span className="">Create</span>
+        <Home size={16} strokeWidth={3} />
+        <span className="">Home</span>
       </button>
 
       <button 
