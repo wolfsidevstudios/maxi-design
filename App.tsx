@@ -248,10 +248,30 @@ function App() {
              } catch (e) {}
           }
 
-          // HTML Code
+          // HTML Code Extraction (Improved Logic)
+          // 1. Remove theme config
           let cleanCode = accumulatedText.replace(/<theme_config>[\s\S]*?<\/theme_config>/, '').trim();
-          if (cleanCode.includes('```html')) cleanCode = cleanCode.split('```html')[1];
-          if (cleanCode.includes('```')) cleanCode = cleanCode.split('```')[0];
+          
+          // 2. Try to find markdown code block (either html or generic)
+          const codeBlockRegex = /```(?:html)?\s*([\s\S]*?)```/;
+          const match = cleanCode.match(codeBlockRegex);
+          
+          if (match && match[1]) {
+             cleanCode = match[1];
+          } else {
+             // 3. Fallback: If no markdown, but looks like HTML, use it.
+             // Sometimes the model might stream partials like "```html <div..." without closing it yet.
+             // We can try to extract from the first "```html" if present.
+             if (cleanCode.includes('```html')) {
+                cleanCode = cleanCode.split('```html')[1];
+             } else if (cleanCode.includes('```')) {
+                cleanCode = cleanCode.split('```')[1];
+             }
+             // If still contains trailing ```, remove it
+             if (cleanCode.includes('```')) {
+                cleanCode = cleanCode.split('```')[0];
+             }
+          }
 
           const elapsed = Date.now() - startTime;
           if (elapsed > MIN_THEME_TIME) {

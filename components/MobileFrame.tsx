@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 
 interface MobileFrameProps {
   htmlContent: string;
@@ -8,32 +8,51 @@ interface MobileFrameProps {
 
 const MobileFrame: React.FC<MobileFrameProps> = ({ htmlContent, scale = 1, loadingPhase = 'idle' }) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const [isIframeLoaded, setIsIframeLoaded] = useState(false);
 
-  useEffect(() => {
-    if (iframeRef.current) {
-      const doc = iframeRef.current.contentDocument;
-      if (doc) {
-        doc.open();
-        doc.write(`
-          <!DOCTYPE html>
-          <html>
-            <head>
-              <script src="https://cdn.tailwindcss.com"></script>
-              <style>
-                body { margin: 0; overflow-x: hidden; }
-                /* Hide scrollbar for clean look */
-                ::-webkit-scrollbar { width: 0px; background: transparent; }
-              </style>
-            </head>
-            <body class="bg-gray-50 min-h-screen">
-              ${htmlContent || ''}
-            </body>
-          </html>
-        `);
-        doc.close();
-      }
+  // Robust content writing function
+  const updateIframeContent = () => {
+    const iframe = iframeRef.current;
+    if (!iframe) return;
+
+    const doc = iframe.contentDocument;
+    if (!doc) return;
+
+    // Only write if we have content or need to clear it
+    const contentToWrite = htmlContent || '';
+    
+    try {
+      doc.open();
+      doc.write(`
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <meta charset="UTF-8" />
+            <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+            <script src="https://cdn.tailwindcss.com"></script>
+            <style>
+              body { margin: 0; overflow-x: hidden; }
+              /* Hide scrollbar for clean look */
+              ::-webkit-scrollbar { width: 0px; background: transparent; }
+            </style>
+          </head>
+          <body class="bg-gray-50 min-h-screen">
+            ${contentToWrite}
+          </body>
+        </html>
+      `);
+      doc.close();
+    } catch (e) {
+      console.error("Failed to write to iframe", e);
     }
-  }, [htmlContent]);
+  };
+
+  // Write content when HTML changes, BUT only if iframe is loaded
+  useEffect(() => {
+    if (isIframeLoaded) {
+      updateIframeContent();
+    }
+  }, [htmlContent, isIframeLoaded]);
 
   return (
     <div 
@@ -107,6 +126,10 @@ const MobileFrame: React.FC<MobileFrameProps> = ({ htmlContent, scale = 1, loadi
         {/* Screen Content */}
         <iframe
           ref={iframeRef}
+          onLoad={() => {
+            setIsIframeLoaded(true);
+            updateIframeContent(); // Ensure content writes immediately on load
+          }}
           title="Mobile Preview"
           className="w-full h-full bg-white relative z-10 rounded-[36px]"
           sandbox="allow-scripts allow-same-origin" 
