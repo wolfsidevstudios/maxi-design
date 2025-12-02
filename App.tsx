@@ -565,6 +565,9 @@ function App() {
          if (isMain) setStatusSteps(prev => ({ ...prev, planned: true, generating: true }));
       }, 3000);
 
+      // STRICT RULE: Only allow streaming for Pro models
+      const supportsStreaming = modelName === 'gemini-3-pro-preview' || modelName === 'gemini-2.5-pro';
+
       try {
         await streamResponse(session, userMsg.content, userMsg.attachments, (chunk) => {
           accumulatedText += chunk;
@@ -611,13 +614,11 @@ function App() {
           
           extractedHtml = extractedHtml.trim();
           
-          if (extractedHtml) {
+          // Only update UI in real-time if model supports streaming and user has it enabled
+          if (extractedHtml && settings.enableStreaming && supportsStreaming) {
              setPhase('coding');
              if (isMain) setStatusSteps(prev => ({ ...prev, planned: true, generating: true }));
-
-             if (settings.enableStreaming) {
-               setHtml(extractedHtml);
-             }
+             setHtml(extractedHtml);
           }
         });
 
@@ -637,6 +638,7 @@ function App() {
            finalHtml = finalCleanCode; 
         }
 
+        // Always update with the final HTML, regardless of streaming setting
         if (finalHtml) {
            setHtml(finalHtml);
         }

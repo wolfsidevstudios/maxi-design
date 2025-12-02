@@ -69,9 +69,8 @@ export const createChatSession = (
   });
 
   // Determine if we should apply thinking config
-  // The system instructions state Thinking is for 2.5 series. 
-  // We check for '2.5' or '3' (as some previews might support it, but being safe with 2.5 primarily)
-  const supportsThinking = model.includes('2.5') || model.includes('3-pro');
+  // STRICT RULE: Only allow thinking for Pro models (3.0 Pro and 2.5 Pro)
+  const supportsThinking = model === 'gemini-3-pro-preview' || model === 'gemini-2.5-pro';
   const shouldUseThinking = enableThinking && supportsThinking;
 
   return ai.chats.create({
@@ -80,7 +79,7 @@ export const createChatSession = (
       systemInstruction: SYSTEM_INSTRUCTION,
       // Only set temperature if NOT using thinking, as thinking models manage their own sampling
       ...(!shouldUseThinking ? { temperature: 0.7 } : {}),
-      // Apply thinking budget if enabled
+      // Apply thinking budget if enabled and supported
       ...(shouldUseThinking ? { thinkingConfig: { thinkingBudget: 1024 } } : {})
     },
     history: geminiHistory
