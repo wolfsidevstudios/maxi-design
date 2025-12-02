@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { ArrowLeft, Zap, Sparkles } from './Icons';
 import { User } from '../types';
@@ -117,8 +118,8 @@ const LoginPage: React.FC<LoginPageProps> = ({ onBack, onLoginSuccess }) => {
 
                <div className="text-center">
                   <p className="text-sm font-medium text-gray-500">
-                     Don't have an account? <br/>
-                     <button onClick={onBack} className="text-black font-black underline mt-1 hover:text-[#FF6B4A]">Join the Waitlist</button>
+                     New to Maxi Design? <br/>
+                     <span className="text-black font-medium">Just sign in with Google to create an account.</span>
                   </p>
                </div>
             </div>

@@ -9,10 +9,10 @@ import StudioPanel from './components/StudioPanel';
 import PrivacyPolicy from './components/PrivacyPolicy';
 import TermsOfService from './components/TermsOfService';
 import NotificationSystem, { NotificationItem } from './components/Notification';
-import WaitlistPage from './components/WaitlistPage';
+import MarketingPage from './components/WaitlistPage'; // Reusing file, updated component
 import LoginPage from './components/LoginPage';
+import OnboardingPage from './components/OnboardingPage';
 import CodeEditor from './components/CodeEditor';
-import { hasJoinedWaitlist } from './services/db';
 import { 
   createChatSession, 
   streamResponse 
@@ -60,21 +60,27 @@ import { Message, ThemeSettings, ViewMode, ProjectData, AppSettings, Screen, Mod
 import { Chat } from '@google/genai';
 import JSZip from 'jszip';
 
-// Extend ViewMode to include waitlist and login
-type ExtendedViewMode = ViewMode | 'waitlist' | 'login';
+// Extend ViewMode to include marketing, login, onboarding
+type ExtendedViewMode = ViewMode | 'marketing' | 'login' | 'onboarding';
 
 function App() {
-  const [viewMode, setViewMode] = useState<ExtendedViewMode>(() => {
-     // Check if user has already joined waitlist OR logged in
-     if (hasJoinedWaitlist()) {
-        return 'landing';
-     }
-     return 'waitlist';
-  });
-  
   const [currentUser, setCurrentUser] = useState<User | null>(() => {
      const savedUser = localStorage.getItem('maxi_user');
      return savedUser ? JSON.parse(savedUser) : null;
+  });
+
+  const [viewMode, setViewMode] = useState<ExtendedViewMode>(() => {
+     // Check for login
+     const user = localStorage.getItem('maxi_user');
+     const onboardingComplete = localStorage.getItem('maxi_onboarding_complete');
+     
+     if (user) {
+        // If logged in, check if they finished onboarding
+        return onboardingComplete === 'true' ? 'landing' : 'onboarding';
+     }
+     
+     // Default to marketing page for new visitors
+     return 'marketing';
   });
 
   const [landingTab, setLandingTab] = useState<'create' | 'projects'>('create');
@@ -690,31 +696,51 @@ function App() {
 
   // --- VIEW RENDERING ---
 
-  if (viewMode === 'waitlist') {
-    return <WaitlistPage 
-       onAccessGranted={() => {
-          localStorage.setItem('maxi_access_granted', 'true');
-          setViewMode('landing');
-       }} 
-       onNavigateToLogin={() => setViewMode('login')}
+  // 1. Marketing Page (Public)
+  if (viewMode === 'marketing') {
+    return <MarketingPage 
+       onNavigateToLogin={() => setViewMode('login')} 
     />;
   }
   
+  // 2. Login Page
   if (viewMode === 'login') {
      return <LoginPage 
-        onBack={() => setViewMode('waitlist')}
+        onBack={() => setViewMode('marketing')}
         onLoginSuccess={(user) => {
-           localStorage.setItem('maxi_access_granted', 'true');
            localStorage.setItem('maxi_user', JSON.stringify(user));
            setCurrentUser(user);
+           // After login, check if they need onboarding
+           if (localStorage.getItem('maxi_onboarding_complete') === 'true') {
+              setViewMode('landing');
+           } else {
+              setViewMode('onboarding');
+           }
+        }}
+     />
+  }
+
+  // 3. Onboarding Page (API Key Setup)
+  if (viewMode === 'onboarding') {
+     return <OnboardingPage 
+        username={currentUser?.name || 'Designer'}
+        onComplete={(apiKey) => {
+           // Save key to settings
+           const newSettings = { ...settings, customApiKey: apiKey };
+           setSettings(newSettings);
+           localStorage.setItem('sleek_settings', JSON.stringify(newSettings));
+           // Mark onboarding as complete
+           localStorage.setItem('maxi_onboarding_complete', 'true');
            setViewMode('landing');
         }}
      />
   }
 
+  // 4. Privacy & Terms
   if (viewMode === 'privacy') return <PrivacyPolicy onBack={() => setViewMode('landing')} />;
   if (viewMode === 'terms') return <TermsOfService onBack={() => setViewMode('landing')} />;
 
+  // 5. Main Dashboard (Landing/Projects View)
   if (viewMode === 'landing') {
     return (
       <div className="relative min-h-screen bg-[#FDFBD4]">
@@ -744,7 +770,7 @@ function App() {
     );
   }
 
-  // RENDER: Editor
+  // 6. Editor View
   return (
     <div className="flex h-screen w-full overflow-hidden bg-[#FDFBD4] font-sans">
       <NotificationSystem notifications={notifications} onDismiss={removeNotification} />

@@ -1,10 +1,8 @@
 
 import React, { useState, useEffect } from 'react';
-import { Sparkles, ArrowUp, CheckCircle2, Loader2, ShieldAlert, Zap, Code, Layers, Smartphone, MousePointer2, X, AlertTriangle, Monitor, Globe, ChevronDown, Trophy, MessageSquare, Key } from './Icons';
-import { joinWaitlist, validateInviteCode } from '../services/db';
+import { Sparkles, ArrowUp, CheckCircle2, Loader2, ShieldAlert, Zap, Code, Layers, Smartphone, MousePointer2, X, AlertTriangle, Monitor, Globe, ChevronDown, Trophy, MessageSquare, Key, ArrowRight } from './Icons';
 
-interface WaitlistPageProps {
-  onAccessGranted: () => void;
+interface MarketingPageProps {
   onNavigateToLogin: () => void;
 }
 
@@ -115,117 +113,7 @@ const DemoSection = () => {
   );
 }
 
-const WaitlistPage: React.FC<WaitlistPageProps> = ({ onAccessGranted, onNavigateToLogin }) => {
-  const [email, setEmail] = useState('');
-  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
-  const [message, setMessage] = useState('');
-  
-  // Invite Code State
-  const [inviteCode, setInviteCode] = useState('');
-  const [inviteStatus, setInviteStatus] = useState<'idle' | 'checking' | 'valid' | 'invalid'>('idle');
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email) return;
-
-    setStatus('loading');
-    
-    const result = await joinWaitlist(email);
-
-    if (result.success) {
-      setStatus('success');
-      setMessage(result.message);
-    } else {
-      setStatus('error');
-      setMessage(result.message);
-    }
-  };
-
-  const handleInviteCheck = async (e: React.FormEvent) => {
-     e.preventDefault();
-     if (!inviteCode) return;
-     
-     setInviteStatus('checking');
-     const isValid = await validateInviteCode(inviteCode);
-     
-     if (isValid) {
-        setInviteStatus('valid');
-        setTimeout(() => {
-           onAccessGranted();
-        }, 1000);
-     } else {
-        setInviteStatus('invalid');
-     }
-  };
-
-  const WaitlistForm = ({ className = "" }: { className?: string }) => (
-    <div className={`w-full max-w-md ${className}`}>
-      {status === 'success' ? (
-        <div className="bg-[#A3E635] border-2 border-black rounded-xl p-6 shadow-[4px_4px_0px_0px_black] text-center animate-in zoom-in duration-300">
-           <div className="flex justify-center mb-3">
-              <CheckCircle2 size={32} className="text-black" strokeWidth={2.5} />
-           </div>
-           <h3 className="text-xl font-black uppercase tracking-tight mb-1">You're on the list!</h3>
-           <p className="font-medium text-black/80 text-sm leading-tight">{message}</p>
-        </div>
-      ) : (
-        <div className="space-y-6">
-           <form onSubmit={handleSubmit} className="relative group">
-              <div className="relative flex items-center">
-                 <input 
-                    type="email" 
-                    placeholder="Enter your email..."
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    disabled={status === 'loading'}
-                    className="w-full h-14 bg-white border-2 border-black rounded-xl pl-4 pr-16 text-lg font-medium outline-none focus:shadow-[4px_4px_0px_0px_black] transition-all placeholder:text-gray-400 disabled:opacity-70"
-                 />
-                 <button 
-                    type="submit" 
-                    disabled={status === 'loading' || !email}
-                    className="absolute right-2 top-2 bottom-2 aspect-square bg-[#FF6B4A] hover:bg-[#FF5530] text-white rounded-lg border-2 border-black flex items-center justify-center transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-[2px_2px_0px_0px_black] hover:translate-x-[-1px] hover:translate-y-[-1px] active:shadow-none active:translate-x-[0px] active:translate-y-[0px]"
-                 >
-                    {status === 'loading' ? <Loader2 className="animate-spin" size={20} /> : <ArrowUp size={24} strokeWidth={3} className="rotate-45" />}
-                 </button>
-              </div>
-              {status === 'error' && (
-                 <div className="absolute -bottom-10 left-0 right-0 flex items-center gap-2 text-red-600 font-bold text-xs bg-red-50 p-2 rounded border border-red-200">
-                    <ShieldAlert size={14} /> {message}
-                 </div>
-              )}
-           </form>
-
-           {/* INVITE CODE INPUT */}
-           <div className="pt-6 border-t border-black/10">
-              <form onSubmit={handleInviteCheck} className="flex flex-col gap-2">
-                 <label className="text-xs font-black uppercase tracking-widest text-gray-400 flex items-center gap-1">
-                    <Key size={12} /> Have an invite code?
-                 </label>
-                 <div className="flex gap-2">
-                    <input 
-                       type="text" 
-                       placeholder="CODE-1234"
-                       value={inviteCode}
-                       onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
-                       className="flex-1 h-10 bg-white border-2 border-black rounded-lg pl-3 text-sm font-bold outline-none uppercase placeholder:font-medium placeholder:normal-case focus:shadow-[2px_2px_0px_0px_black] transition-all"
-                    />
-                    <button 
-                       type="submit"
-                       disabled={inviteStatus === 'checking' || !inviteCode}
-                       className="bg-black text-white px-4 rounded-lg font-bold text-xs uppercase tracking-wider border-2 border-transparent hover:bg-gray-800 transition-all disabled:opacity-50"
-                    >
-                       {inviteStatus === 'checking' ? <Loader2 className="animate-spin" size={14} /> : 'Use'}
-                    </button>
-                 </div>
-                 {inviteStatus === 'valid' && <div className="text-xs font-bold text-green-600 flex items-center gap-1"><CheckCircle2 size={12} /> Code accepted! Entering...</div>}
-                 {inviteStatus === 'invalid' && <div className="text-xs font-bold text-red-500 flex items-center gap-1"><X size={12} /> Invalid code</div>}
-              </form>
-           </div>
-        </div>
-      )}
-    </div>
-  );
-
+const MarketingPage: React.FC<MarketingPageProps> = ({ onNavigateToLogin }) => {
   return (
     <div className="min-h-screen w-full bg-[#FDFBD4] font-sans selection:bg-[#FF6B4A] selection:text-white overflow-x-hidden">
       
@@ -239,9 +127,9 @@ const WaitlistPage: React.FC<WaitlistPageProps> = ({ onAccessGranted, onNavigate
              <button onClick={onNavigateToLogin} className="text-sm font-bold hover:underline">
                 Login
              </button>
-             <a href="#join" className="hidden md:block px-4 py-2 bg-black text-white text-xs font-bold uppercase tracking-widest rounded-lg hover:bg-gray-800 transition-colors">
-                Get Early Access
-             </a>
+             <button onClick={onNavigateToLogin} className="hidden md:block px-4 py-2 bg-black text-white text-xs font-bold uppercase tracking-widest rounded-lg hover:bg-gray-800 transition-colors">
+                Start Building
+             </button>
          </div>
       </nav>
 
@@ -251,24 +139,10 @@ const WaitlistPage: React.FC<WaitlistPageProps> = ({ onAccessGranted, onNavigate
          <div className="absolute bottom-0 left-[-10%] w-[300px] h-[300px] bg-[#FF6B4A] rounded-full blur-[100px] opacity-20 animate-pulse delay-700 pointer-events-none"></div>
 
          <div className="max-w-4xl mx-auto flex flex-col items-center text-center relative z-10">
-            {/* Launch Banner */}
-            <div className="w-full max-w-2xl bg-[#FFF7ED] border-l-4 border-[#FF6B4A] p-4 rounded-r-lg shadow-sm flex items-start gap-4 text-left mb-8 animate-in slide-in-from-top-4 duration-500">
-                <div className="bg-[#FF6B4A] text-white p-2 rounded-lg shrink-0 border border-black shadow-[2px_2px_0px_0px_black]">
-                    <Zap size={20} fill="white" />
-                </div>
-                <div>
-                    <h3 className="font-black text-lg text-black uppercase tracking-tight">Launch Imminent</h3>
-                    <p className="text-gray-700 font-medium text-sm leading-relaxed">
-                        We are 99% ready. Just fine-tuning the AI neurons for maximum accuracy. 
-                        <span className="font-bold bg-[#FF6B4A]/10 px-1 rounded mx-1">Official launch expected in 48-72 hours.</span> 
-                        Join the waitlist to get notified instantly.
-                    </p>
-                </div>
-            </div>
-
+            {/* Open Beta Banner */}
             <div className="inline-flex items-center gap-2 bg-white border-2 border-black px-4 py-1.5 rounded-full shadow-[4px_4px_0px_0px_black] mb-8 animate-in slide-in-from-top-4 duration-500">
-               <Sparkles size={14} className="text-[#FF6B4A] fill-current" />
-               <span className="text-xs font-black uppercase tracking-widest">Waitlist v3.0 Open</span>
+               <Zap size={14} className="text-[#FF6B4A] fill-current" />
+               <span className="text-xs font-black uppercase tracking-widest">Public Beta Now Open</span>
             </div>
             
             <h1 className="text-5xl md:text-7xl lg:text-8xl font-display font-black text-black tracking-tighter leading-[0.9] mb-8 animate-in slide-in-from-bottom-8 duration-700">
@@ -283,10 +157,15 @@ const WaitlistPage: React.FC<WaitlistPageProps> = ({ onAccessGranted, onNavigate
                Edit visually like Figma. Export clean React & Tailwind.
             </p>
 
-            <WaitlistForm className="animate-in slide-in-from-bottom-12 duration-700 delay-200" />
+            <button 
+               onClick={onNavigateToLogin}
+               className="group relative px-8 py-4 bg-black text-white text-lg font-bold uppercase tracking-widest rounded-xl border-2 border-transparent hover:bg-gray-900 shadow-[6px_6px_0px_0px_rgba(0,0,0,0.2)] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)] hover:translate-x-[2px] hover:translate-y-[2px] active:translate-x-[6px] active:translate-y-[6px] active:shadow-none transition-all animate-in slide-in-from-bottom-12 duration-700 delay-200 flex items-center gap-3"
+            >
+               Start Building for Free <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
+            </button>
             
             <p className="mt-6 text-xs font-bold text-gray-400 uppercase tracking-widest animate-in fade-in delay-500">
-               Limited spots available for the beta
+               No credit card required • Instant Access
             </p>
 
             {/* PRODUCT HUNT BADGE */}
@@ -318,7 +197,7 @@ const WaitlistPage: React.FC<WaitlistPageProps> = ({ onAccessGranted, onNavigate
          <div className="flex whitespace-nowrap gap-8 animate-[marquee_20s_linear_infinite]">
             {[...Array(10)].map((_, i) => (
                <div key={i} className="flex items-center gap-2 text-[#A3E635] font-black uppercase tracking-widest text-sm">
-                  <Zap size={16} fill="currentColor" /> JOIN 2,000+ DESIGNERS WAITING FOR ACCESS
+                  <Zap size={16} fill="currentColor" /> JOIN 2,000+ DESIGNERS BUILDING WITH AI
                </div>
             ))}
          </div>
@@ -508,11 +387,10 @@ const WaitlistPage: React.FC<WaitlistPageProps> = ({ onAccessGranted, onNavigate
 
             <div className="grid md:grid-cols-2 gap-6">
                {[
-                  { q: "Is it free to join?", a: "Yes! Joining the waitlist is completely free. We will announce pricing plans when we launch the beta." },
+                  { q: "Is it free to join?", a: "Yes! Creating an account is free. You just need your own API key to generate designs." },
                   { q: "Do I need to know how to code?", a: "Not at all. Maxi Design writes the code for you. If you are a developer, you can export the code to speed up your workflow." },
                   { q: "What tech stack is used?", a: "We export standard React components styled with Tailwind CSS. It's clean, semantic, and production-ready." },
-                  { q: "Can I use my own API key?", a: "Yes. For power users, you can input your own Google Gemini API key to have full control over your usage limits." },
-                  { q: "When will I get access?", a: "We are rolling out access in batches every week to ensure stability. Sign up now to secure your spot in line." },
+                  { q: "Why do I need an API key?", a: "We want to give you the lowest possible latency and full privacy. By using your own key, you talk directly to Google's servers." },
                   { q: "Can I build complex apps?", a: "You can build multi-screen flows and complex UI layouts. Backend logic needs to be connected separately." },
                ].map((item, i) => (
                   <div key={i} className="bg-white border-2 border-black rounded-xl p-6 shadow-[4px_4px_0px_0px_black]">
@@ -535,9 +413,14 @@ const WaitlistPage: React.FC<WaitlistPageProps> = ({ onAccessGranted, onNavigate
                Ready to build <br/> the future?
             </h2>
             <p className="text-xl text-[#FDFBD4]/70 mb-12 max-w-xl">
-               Join the waitlist today and get priority access to the platform when we open the doors.
+               Start designing in minutes. No credit card required.
             </p>
-            <WaitlistForm className="max-w-lg mx-auto" />
+            <button 
+               onClick={onNavigateToLogin}
+               className="group relative px-10 py-5 bg-[#A3E635] text-black text-xl font-bold uppercase tracking-widest rounded-xl border-2 border-transparent hover:bg-[#92D320] shadow-[6px_6px_0px_0px_rgba(255,255,255,0.2)] hover:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.2)] hover:translate-x-[2px] hover:translate-y-[2px] active:translate-x-[6px] active:translate-y-[6px] active:shadow-none transition-all flex items-center gap-3"
+            >
+               Get Started Now <ArrowRight size={24} className="group-hover:translate-x-1 transition-transform" />
+            </button>
          </div>
       </section>
 
@@ -564,4 +447,4 @@ const WaitlistPage: React.FC<WaitlistPageProps> = ({ onAccessGranted, onNavigate
   );
 };
 
-export default WaitlistPage;
+export default MarketingPage;

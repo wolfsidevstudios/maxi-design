@@ -5,6 +5,7 @@ import {
   Layout, 
   ArrowLeft, 
   ArrowUp,
+  ArrowRight,
   Sun, 
   Play, 
   Share, 
@@ -63,7 +64,8 @@ import {
   Eye,
   Lock,
   Copy,
-  FileCode
+  FileCode,
+  ExternalLink
 } from 'lucide-react';
 
 export {
@@ -71,6 +73,7 @@ export {
   Layout, 
   ArrowLeft, 
   ArrowUp,
+  ArrowRight,
   Sun, 
   Play, 
   Share, 
@@ -129,5 +132,6 @@ export {
   Eye,
   Lock,
   Copy,
-  FileCode
+  FileCode,
+  ExternalLink
 };
