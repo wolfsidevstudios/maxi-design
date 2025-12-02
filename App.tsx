@@ -55,7 +55,8 @@ import {
   X,
   MousePointerClick,
   BoxSelect,
-  FileCode
+  FileCode,
+  Presentation
 } from './components/Icons';
 import { Message, ThemeSettings, ViewMode, ProjectData, AppSettings, Screen, ModelType, User, Template } from './types';
 import { Chat } from '@google/genai';
@@ -189,6 +190,8 @@ function App() {
     generating: false
   });
 
+  const activeProject = projects.find(p => p.id === currentProjectId);
+
   useEffect(() => {
     localStorage.setItem('sleek_projects', JSON.stringify(projects));
   }, [projects]);
@@ -213,19 +216,32 @@ function App() {
   }, [messages, screens, activeScreenId, theme, settings, currentProjectId, viewMode]);
 
   useEffect(() => {
-    if (viewMode === 'editor') {
+    if (viewMode === 'editor' && activeProject) {
       try {
         if (!chatSessionRef.current) {
-          chatSessionRef.current = createChatSession(messages, settings.activeModel, settings.customApiKey, settings.enableThinking);
+          // Pass project type to session creator
+          chatSessionRef.current = createChatSession(
+             messages, 
+             settings.activeModel, 
+             settings.customApiKey, 
+             settings.enableThinking,
+             activeProject.type || 'mobile'
+          );
         }
         if (isRaceMode && !challengerSessionRef.current) {
-          challengerSessionRef.current = createChatSession(challengerMessages, settings.raceModel, settings.customApiKey, settings.enableThinking);
+          challengerSessionRef.current = createChatSession(
+             challengerMessages, 
+             settings.raceModel, 
+             settings.customApiKey, 
+             settings.enableThinking,
+             activeProject.type || 'mobile'
+          );
         }
       } catch (e: any) {
         addNotification('error', 'Initialization Error', 'Failed to initialize AI. Please check your API key.');
       }
     }
-  }, [viewMode, isRaceMode, settings.activeModel, settings.raceModel, settings.customApiKey, settings.enableThinking]);
+  }, [viewMode, isRaceMode, settings.activeModel, settings.raceModel, settings.customApiKey, settings.enableThinking, activeProject?.type]);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -288,7 +304,7 @@ function App() {
      });
   };
 
-  const handleStartProject = (initialPrompt: string, referenceImage?: string, initialTab: 'chat' | 'studio' = 'chat') => {
+  const handleStartProject = (initialPrompt: string, referenceImage?: string, initialTab: 'chat' | 'studio' = 'chat', type: 'mobile' | 'web' | 'presentation' = 'mobile') => {
     const newId = Date.now().toString();
     const initialScreen: Screen = {
       id: 'screen-1',
@@ -300,7 +316,7 @@ function App() {
 
     const newProject: ProjectData = {
       id: newId,
-      name: initialPrompt || 'Untitled Project',
+      name: initialPrompt || (type === 'presentation' ? 'Untitled Presentation' : 'Untitled Project'),
       lastEdited: Date.now(),
       messages: initialMessages,
       screens: [initialScreen],
@@ -313,7 +329,7 @@ function App() {
         primaryColor: '#FF6B4A'
       },
       settings: settings,
-      type: 'mobile' 
+      type: type 
     };
 
     setProjects(prev => [newProject, ...prev]);
@@ -326,14 +342,16 @@ function App() {
     setChallengerHtmlCode('');
     setTheme(newProject.theme);
     setPanPosition({ x: 0, y: 0 });
-    setZoom(0.6); 
+    // Adjust zoom based on type
+    setZoom(type === 'mobile' ? 0.6 : 0.45);
     setIsRaceMode(false); 
     setAttachedImage(referenceImage || null);
     setSelectedElementStyles(null);
     setActiveTool('select');
     setActiveTab(initialTab);
 
-    chatSessionRef.current = createChatSession([], settings.activeModel, settings.customApiKey, settings.enableThinking);
+    // Initial Chat session needs correct type
+    chatSessionRef.current = createChatSession([], settings.activeModel, settings.customApiKey, settings.enableThinking, type);
 
     setViewMode('editor');
     
@@ -349,7 +367,7 @@ function App() {
      const initialScreen: Screen = {
         id: 'screen-1',
         name: 'Home',
-        html: template.code // Uses the rich static HTML from CommunityPage
+        html: template.code 
      };
 
      const initialMessages: Message[] = [
@@ -383,15 +401,20 @@ function App() {
      setChallengerHtmlCode('');
      setTheme(template.theme);
      setPanPosition({ x: 0, y: 0 });
-     // Adjust initial zoom based on type
-     setZoom(template.type === 'web' ? 0.4 : 0.6);
+     setZoom(template.type === 'mobile' ? 0.6 : 0.4);
      setIsRaceMode(false);
      setAttachedImage(null);
      setSelectedElementStyles(null);
      setActiveTool('select');
      setActiveTab('chat');
 
-     chatSessionRef.current = createChatSession(initialMessages, settings.activeModel, settings.customApiKey, settings.enableThinking);
+     chatSessionRef.current = createChatSession(
+        initialMessages, 
+        settings.activeModel, 
+        settings.customApiKey, 
+        settings.enableThinking,
+        template.type
+     );
 
      setViewMode('editor');
      addNotification('success', 'Template Cloned', `Started new project from ${template.name}`);
@@ -415,8 +438,7 @@ function App() {
     if (project.settings) setSettings(project.settings);
     
     setPanPosition({ x: 0, y: 0 });
-    // Adjust zoom on load
-    setZoom(project.type === 'web' ? 0.4 : 0.7);
+    setZoom((project.type === 'web' || project.type === 'presentation') ? 0.45 : 0.7);
     setIsRaceMode(false); 
     setSelectedElementStyles(null);
     setActiveTool('select');
@@ -426,7 +448,8 @@ function App() {
       project.messages, 
       project.settings?.activeModel || settings.activeModel, 
       project.settings?.customApiKey || settings.customApiKey,
-      project.settings?.enableThinking ?? settings.enableThinking
+      project.settings?.enableThinking ?? settings.enableThinking,
+      project.type || 'mobile'
     );
 
     setViewMode('editor');
@@ -658,7 +681,14 @@ function App() {
 
     if (isRaceMode) {
       if (!challengerSessionRef.current) {
-        challengerSessionRef.current = createChatSession(challengerMessages, settings.raceModel, settings.customApiKey, settings.enableThinking);
+        // Pass type to challenger
+        challengerSessionRef.current = createChatSession(
+           challengerMessages, 
+           settings.raceModel, 
+           settings.customApiKey, 
+           settings.enableThinking,
+           activeProject?.type || 'mobile'
+        );
       }
       promises.push(
         processStream(challengerSessionRef.current, setChallengerHtmlCode, setChallengerDesignPhase, false, settings.raceModel)
@@ -684,7 +714,13 @@ function App() {
     if (winner === 'challenger') {
       updateActiveScreenHtml(challengerHtmlCode);
       setMessages(challengerMessages);
-      chatSessionRef.current = createChatSession(challengerMessages, settings.activeModel, settings.customApiKey, settings.enableThinking);
+      chatSessionRef.current = createChatSession(
+         challengerMessages, 
+         settings.activeModel, 
+         settings.customApiKey, 
+         settings.enableThinking,
+         activeProject?.type || 'mobile'
+      );
     }
     setIsRaceMode(false);
     setChallengerHtmlCode('');
@@ -699,7 +735,13 @@ function App() {
       setChallengerHtmlCode(getActiveScreenHtml());
       setChallengerMessages([...messages]);
       setChallengerDesignPhase('idle');
-      challengerSessionRef.current = createChatSession([...messages], settings.raceModel, settings.customApiKey, settings.enableThinking);
+      challengerSessionRef.current = createChatSession(
+         [...messages], 
+         settings.raceModel, 
+         settings.customApiKey, 
+         settings.enableThinking,
+         activeProject?.type || 'mobile'
+      );
     } else {
       setChallengerHtmlCode('');
       setChallengerMessages([]);
@@ -726,6 +768,9 @@ function App() {
   const handleMouseUp = () => {
     setIsPanning(false);
   };
+
+  const isWebProject = activeProject?.type === 'web';
+  const isPresentation = activeProject?.type === 'presentation';
 
   // --- RENDER ---
   if (viewMode === 'marketing') return <MarketingPage onNavigateToLogin={() => setViewMode('login')} />;
@@ -759,10 +804,7 @@ function App() {
     );
   }
 
-  // Editor
-  const activeProject = projects.find(p => p.id === currentProjectId);
-  const isWebProject = activeProject?.type === 'web';
-
+  // Editor UI
   return (
     <div className="flex h-screen w-full overflow-hidden bg-[#FDFBD4] font-sans">
       <NotificationSystem notifications={notifications} onDismiss={removeNotification} />
@@ -905,6 +947,7 @@ function App() {
               {screens.find(s => s.id === activeScreenId)?.name || 'Home'} 
             </span>
             {isWebProject && <span className="ml-2 bg-blue-100 text-blue-600 px-2 py-0.5 rounded border border-blue-200 text-[10px] font-bold">WEB</span>}
+            {isPresentation && <span className="ml-2 bg-purple-100 text-purple-600 px-2 py-0.5 rounded border border-purple-200 text-[10px] font-bold">SLIDES</span>}
           </div>
           <div className="flex items-center gap-3">
              <button onClick={() => setActiveTab('studio')} className={`flex items-center gap-2 px-4 py-2 border-2 border-black rounded-lg text-xs font-bold uppercase tracking-wider transition-all shadow-[2px_2px_0px_0px_black] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_black] ${activeTab === 'studio' ? 'bg-black text-white' : 'bg-white hover:bg-gray-50 text-black'}`}>
@@ -936,7 +979,7 @@ function App() {
             style={{ 
               transform: `translate(${panPosition.x}px, ${panPosition.y}px)`,
               transition: isPanning ? 'none' : 'transform 0.1s ease-out',
-              display: 'flex', gap: '60px', alignItems: 'flex-start', justifyContent: 'center', paddingTop: '40px'
+              display: 'flex', gap: '60px', alignItems: 'center', justifyContent: 'center'
             }}
           >
             <div className="relative flex flex-col items-center gap-4">

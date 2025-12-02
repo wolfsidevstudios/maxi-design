@@ -46,7 +46,7 @@ export interface ProjectData {
   theme: ThemeSettings;
   thumbnail?: string;
   settings?: AppSettings;
-  type?: 'mobile' | 'web';
+  type?: 'mobile' | 'web' | 'presentation';
 }
 
 export type ViewMode = 'landing' | 'editor' | 'privacy' | 'terms' | 'login';
@@ -71,5 +71,5 @@ export interface Template {
   thumbnailGradient: string;
   code: string;
   theme: ThemeSettings;
-  type: 'mobile' | 'web';
+  type: 'mobile' | 'web' | 'presentation';
 }

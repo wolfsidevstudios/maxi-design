@@ -7,7 +7,7 @@ interface MobileFrameProps {
   loadingPhase?: 'idle' | 'theming' | 'coding';
   enableEditMode?: boolean;
   onHtmlUpdate?: (newHtml: string) => void;
-  type?: 'mobile' | 'web';
+  type?: 'mobile' | 'web' | 'presentation';
 }
 
 const MobileFrame: React.FC<MobileFrameProps> = ({ htmlContent, scale = 1, loadingPhase = 'idle', enableEditMode = false, onHtmlUpdate, type = 'mobile' }) => {
@@ -33,7 +33,7 @@ const MobileFrame: React.FC<MobileFrameProps> = ({ htmlContent, scale = 1, loadi
         <script src="https://cdn.tailwindcss.com"></script>
         <style>
           body { margin: 0; overflow-x: hidden; }
-          /* Hide scrollbar for clean look */
+          /* Hide scrollbar for clean look in previews */
           ::-webkit-scrollbar { width: 0px; background: transparent; }
           
           /* Edit Mode Highlight Class */
@@ -164,9 +164,19 @@ const MobileFrame: React.FC<MobileFrameProps> = ({ htmlContent, scale = 1, loadi
     </html>
   `;
 
-  const width = type === 'web' ? '1280px' : '375px';
-  const height = type === 'web' ? '832px' : '812px'; // Taller for web to account for chrome
-  const borderRadius = type === 'web' ? '12px' : '40px';
+  let width = '375px';
+  let height = '812px';
+  let borderRadius = '40px';
+
+  if (type === 'web') {
+     width = '1280px';
+     height = '832px';
+     borderRadius = '12px';
+  } else if (type === 'presentation') {
+     width = '1280px'; // 16:9 Aspect Ratio Base
+     height = '720px';
+     borderRadius = '0px'; // Presentations usually square
+  }
 
   return (
     <div 
@@ -175,7 +185,7 @@ const MobileFrame: React.FC<MobileFrameProps> = ({ htmlContent, scale = 1, loadi
         width: width, 
         height: height,
         transform: `scale(${scale})`,
-        transformOrigin: 'top center' // Pivot from top to make web frame easier to see
+        transformOrigin: 'center center' // Pivot center for canvas alignment
       }}
     >
       {/* Container with Neo-Brutalist Border */}
@@ -195,6 +205,13 @@ const MobileFrame: React.FC<MobileFrameProps> = ({ htmlContent, scale = 1, loadi
               <div className="flex-1 mx-4 bg-white border border-gray-300 h-5 rounded flex items-center px-2">
                  <span className="text-[10px] text-gray-400 font-mono">localhost:3000</span>
               </div>
+           </div>
+        )}
+
+        {/* Presentation Controls Overlay (Visual Only) */}
+        {type === 'presentation' && (
+           <div className="absolute bottom-4 right-4 z-20 flex gap-2 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity">
+              <div className="bg-black/80 text-white px-3 py-1 rounded-full text-xs font-bold backdrop-blur-sm">Slide 1/5</div>
            </div>
         )}
 
@@ -253,7 +270,7 @@ const MobileFrame: React.FC<MobileFrameProps> = ({ htmlContent, scale = 1, loadi
         <iframe
           ref={iframeRef}
           srcDoc={docSource}
-          title="Mobile Preview"
+          title="Preview"
           className="w-full h-full bg-white relative z-10"
           style={{ height: type === 'web' ? 'calc(100% - 32px)' : '100%' }} // Adjust for chrome bar
           sandbox="allow-scripts allow-same-origin allow-forms" 
