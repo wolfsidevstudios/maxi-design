@@ -9,6 +9,8 @@ import StudioPanel from './components/StudioPanel';
 import PrivacyPolicy from './components/PrivacyPolicy';
 import TermsOfService from './components/TermsOfService';
 import NotificationSystem, { NotificationItem } from './components/Notification';
+import WaitlistPage from './components/WaitlistPage';
+import { hasJoinedWaitlist } from './services/db';
 import { 
   createChatSession, 
   streamResponse 
@@ -55,8 +57,18 @@ import { Message, ThemeSettings, ViewMode, ProjectData, AppSettings, Screen, Mod
 import { Chat } from '@google/genai';
 import JSZip from 'jszip';
 
+// Extend ViewMode to include waitlist
+type ExtendedViewMode = ViewMode | 'waitlist';
+
 function App() {
-  const [viewMode, setViewMode] = useState<ViewMode>('landing');
+  const [viewMode, setViewMode] = useState<ExtendedViewMode>(() => {
+     // Check if user has already joined waitlist
+     if (hasJoinedWaitlist()) {
+        return 'landing';
+     }
+     return 'waitlist';
+  });
+
   const [landingTab, setLandingTab] = useState<'create' | 'projects'>('create');
   const [activeTab, setActiveTab] = useState<'chat' | 'theme' | 'screens' | 'studio'>('chat');
   
@@ -67,8 +79,6 @@ function App() {
       const saved = localStorage.getItem('sleek_settings');
       if (saved) {
          const parsed = JSON.parse(saved);
-         // VALIDATION: Ensure the loaded model is valid. If not, reset to default.
-         // This prevents 404 errors if a deprecated model was saved.
          const validModels: ModelType[] = ['gemini-3-pro-preview', 'gemini-2.5-flash', 'gemini-flash-lite-latest'];
          const activeModel = validModels.includes(parsed.activeModel) ? parsed.activeModel : 'gemini-3-pro-preview';
          const raceModel = validModels.includes(parsed.raceModel) ? parsed.raceModel : 'gemini-2.5-flash';
@@ -226,16 +236,10 @@ function App() {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isGenerating]);
 
-  // Listen for Element Events from Iframe (Selection)
+  // Listen for Element Events from Iframe
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
-      if (event.data.type === 'ELEMENT_CLICKED') {
-         // This is for the old "Ask AI to edit" tool
-         // Keeping it for backward compatibility if we want both workflows
-      }
-      
       if (event.data.type === 'ELEMENT_SELECTED') {
-        // This is for the new Studio mode
         setSelectedElementStyles(event.data.payload);
         if (activeTab !== 'studio' && activeTool === 'select') {
            setActiveTab('studio');
@@ -246,7 +250,6 @@ function App() {
     return () => window.removeEventListener('message', handleMessage);
   }, [activeTab, activeTool]);
 
-  // Clear selected element when tool changes
   useEffect(() => {
     if (activeTool === 'pan') {
       setSelectedElementStyles(null);
@@ -263,7 +266,6 @@ function App() {
   };
 
   const broadcastToIframes = (message: any) => {
-     // Helper to send messages to the preview iframe
      const frames = document.getElementsByTagName('iframe');
      for (let i = 0; i < frames.length; i++) {
         frames[i].contentWindow?.postMessage(message, '*');
@@ -271,10 +273,7 @@ function App() {
   };
 
   const handleStudioUpdate = (key: string, value: string) => {
-     // 1. Optimistically update local state for UI
      setSelectedElementStyles((prev: any) => prev ? ({ ...prev, [key]: value }) : null);
-     
-     // 2. Send update to iframe
      broadcastToIframes({
         type: 'UPDATE_STYLE',
         payload: { key, value }
@@ -304,7 +303,6 @@ function App() {
       html: ''
     };
     
-    // Initial message construction
     const initialMessages: Message[] = [];
 
     const newProject: ProjectData = {
@@ -321,7 +319,7 @@ function App() {
         mode: 'light',
         primaryColor: '#FF6B4A'
       },
-      settings: settings // Start with current global settings
+      settings: settings 
     };
 
     setProjects(prev => [newProject, ...prev]);
@@ -329,25 +327,22 @@ function App() {
     setScreens([initialScreen]);
     setActiveScreenId('screen-1');
     
-    // Reset state
     setMessages([]);
     setChallengerMessages([]);
     setChallengerHtmlCode('');
     setTheme(newProject.theme);
     setPanPosition({ x: 0, y: 0 });
-    setZoom(0.6); // Slightly smaller for potentially split view
-    setIsRaceMode(false); // Default to normal mode
+    setZoom(0.6); 
+    setIsRaceMode(false); 
     setAttachedImage(referenceImage || null);
     setSelectedElementStyles(null);
     setActiveTool('select');
     setActiveTab(initialTab);
 
-    // Initialize session
     chatSessionRef.current = createChatSession([], settings.activeModel, settings.customApiKey, settings.enableThinking);
 
     setViewMode('editor');
     
-    // Small delay to allow render, then trigger generation
     if (initialPrompt && initialTab !== 'studio') {
       setTimeout(() => {
         handleSendMessageReal(initialPrompt, referenceImage || null);
@@ -359,7 +354,6 @@ function App() {
     setCurrentProjectId(project.id);
     setMessages(project.messages);
     
-    // Migration for old projects without screens
     if (!project.screens || project.screens.length === 0) {
        const legacyHtml = (project as any).htmlCode || '';
        const defaultScreen: Screen = { id: 'screen-1', name: 'Home', html: legacyHtml };
@@ -375,7 +369,7 @@ function App() {
     
     setPanPosition({ x: 0, y: 0 });
     setZoom(0.7);
-    setIsRaceMode(false); // Reset race mode on load
+    setIsRaceMode(false); 
     setSelectedElementStyles(null);
     setActiveTool('select');
     setActiveTab('chat');
@@ -409,7 +403,7 @@ function App() {
   };
 
   const handleDeleteScreen = (screenId: string) => {
-    if (screens.length <= 1) return; // Don't delete last screen
+    if (screens.length <= 1) return; 
     
     const newScreens = screens.filter(s => s.id !== screenId);
     setScreens(newScreens);
@@ -422,18 +416,15 @@ function App() {
   const handleExport = async () => {
     const zip = new JSZip();
     
-    // Add all screens
     screens.forEach(screen => {
       const fileName = `${screen.name.toLowerCase().replace(/[^a-z0-9]/g, '-')}.html`;
       
-      // Inject Tailwind CDN if missing (it's usually in MobileFrame logic, but good to be safe for standalone)
       let htmlContent = screen.html;
       if (!htmlContent.includes('<script src="https://cdn.tailwindcss.com">')) {
          const headEnd = htmlContent.indexOf('</head>');
          if (headEnd !== -1) {
             htmlContent = htmlContent.slice(0, headEnd) + '<script src="https://cdn.tailwindcss.com"></script>\n' + htmlContent.slice(headEnd);
          } else {
-            // Fallback wrapping if incomplete HTML
             htmlContent = `<!DOCTYPE html><html><head><script src="https://cdn.tailwindcss.com"></script></head><body>${htmlContent}</body></html>`;
          }
       }
@@ -441,7 +432,6 @@ function App() {
       zip.file(fileName, htmlContent);
     });
 
-    // Add Theme Config
     zip.file("theme.json", JSON.stringify(theme, null, 2));
 
     const content = await zip.generateAsync({ type: "blob" });
@@ -467,7 +457,6 @@ function App() {
   const handleSendMessageReal = async (content: string, overrideImage: string | null = null) => {
     if (!content.trim()) return;
     
-    // Determine image to send
     const imageToSend = overrideImage || attachedImage;
     const attachments = imageToSend ? [{ type: 'image' as const, content: imageToSend, mimeType: 'image/jpeg' }] : undefined;
 
@@ -486,14 +475,13 @@ function App() {
     }
     
     setInputValue('');
-    setEditInputValue(''); // Clear edit input
-    setSelectedElementStyles(null); // Clear selection
-    setAttachedImage(null); // Clear attachment after sending
+    setEditInputValue(''); 
+    setSelectedElementStyles(null); 
+    setAttachedImage(null); 
     setIsGenerating(true);
     setStatusSteps({ analyzed: false, planned: false, generating: false });
-    if(activeTab === 'studio') setActiveTab('chat'); // Switch back to chat to see progress
+    if(activeTab === 'studio') setActiveTab('chat'); 
 
-    // --- Helper to process stream ---
     const processStream = async (
       session: Chat, 
       setHtml: (html: string) => void,
@@ -505,8 +493,6 @@ function App() {
       setPhase('theming');
       if (isMain) setStatusSteps(prev => ({ ...prev, analyzed: true }));
 
-      // Safety: Force switch to coding phase after 3 seconds if not triggered by content
-      // This prevents "stuck in theming" if the model skips the theme block
       const safetyTimer = setTimeout(() => {
          setPhase('coding');
          if (isMain) setStatusSteps(prev => ({ ...prev, planned: true, generating: true }));
@@ -516,35 +502,27 @@ function App() {
         await streamResponse(session, userMsg.content, userMsg.attachments, (chunk) => {
           accumulatedText += chunk;
           
-          // 1. Check for Theme Config
           const themeMatch = accumulatedText.match(/<theme_config>([\s\S]*?)<\/theme_config>/);
           if (themeMatch && isMain) { 
              try {
                 const themeJson = JSON.parse(themeMatch[1]);
                 setTheme(prev => ({ ...prev, ...themeJson }));
                 setStatusSteps(prev => ({ ...prev, planned: true }));
-                // Theme found, we can switch to coding phase sooner
                 clearTimeout(safetyTimer);
                 setPhase('coding');
                 if (isMain) setStatusSteps(prev => ({ ...prev, planned: true, generating: true }));
              } catch (e) {}
           }
 
-          // 2. Remove theme block to get potential code
           let cleanCode = accumulatedText.replace(/<theme_config>[\s\S]*?<\/theme_config>/, '').trim();
-          
-          // 3. Robust HTML Extraction
           let extractedHtml = '';
           
-          // Check for Watermark which is our reliable anchor now
           const watermarkIndex = cleanCode.indexOf('<!-- Generated by Maxi Design AI -->');
           if (watermarkIndex !== -1) {
              extractedHtml = cleanCode.substring(watermarkIndex);
-             // If we found the watermark, we are definitely generating code
              setPhase('coding');
              if (isMain) setStatusSteps(prev => ({ ...prev, planned: true, generating: true }));
           } 
-          // Check for Markdown code blocks
           else if (cleanCode.match(/```(html|xml)/i)) {
              const markdownMatch = cleanCode.match(/```(html|xml)?\s*([\s\S]*?)(```|$)/i);
              if (markdownMatch && markdownMatch[2].trim().length > 5) {
@@ -552,7 +530,6 @@ function App() {
                 setPhase('coding');
              }
           }
-          // Check for standard HTML tags
           else {
              const docTypeIndex = cleanCode.indexOf('<!DOCTYPE');
              const htmlIndex = cleanCode.indexOf('<html');
@@ -567,9 +544,7 @@ function App() {
           
           extractedHtml = extractedHtml.trim();
           
-          // Update State if we have content
           if (extractedHtml) {
-             // If we have content, we are definitely in coding phase
              setPhase('coding');
              if (isMain) setStatusSteps(prev => ({ ...prev, planned: true, generating: true }));
 
@@ -579,12 +554,9 @@ function App() {
           }
         });
 
-        // End of Stream Handling
-        // Final fallback: If extraction failed during stream but we have text, try to extract one last time
         let finalCleanCode = accumulatedText.replace(/<theme_config>[\s\S]*?<\/theme_config>/, '').trim();
         let finalHtml = '';
         
-        // Try all extraction methods on final text
         const finalMarkdownMatch = finalCleanCode.match(/```(html|xml)?\s*([\s\S]*?)(```|$)/i);
         if (finalCleanCode.includes('<!-- Generated by Maxi Design AI -->')) {
            finalHtml = finalCleanCode.substring(finalCleanCode.indexOf('<!-- Generated by Maxi Design AI -->'));
@@ -595,7 +567,6 @@ function App() {
         } else if (finalCleanCode.includes('<html')) {
            finalHtml = finalCleanCode.substring(finalCleanCode.indexOf('<html'));
         } else if (finalCleanCode.includes('<div') || finalCleanCode.includes('<body')) {
-           // Extreme fallback for partial snippets
            finalHtml = finalCleanCode; 
         }
 
@@ -619,7 +590,6 @@ function App() {
       }
     };
 
-    // --- Execute Streams ---
     const promises = [];
     
     if (chatSessionRef.current) {
@@ -661,11 +631,6 @@ function App() {
     setDesignPhase('idle');
     setChallengerDesignPhase('idle');
     setStatusSteps({ analyzed: false, planned: false, generating: false });
-  };
-
-  const handleEditSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!editInputValue.trim()) return;
   };
 
   const handleWinRace = (winner: 'main' | 'challenger') => {
@@ -715,11 +680,18 @@ function App() {
     setIsPanning(false);
   };
 
-  // RENDER: Privacy Policy
+  // --- VIEW RENDERING ---
+
+  if (viewMode === 'waitlist') {
+    return <WaitlistPage onAccessGranted={() => {
+       localStorage.setItem('maxi_access_granted', 'true');
+       setViewMode('landing');
+    }} />;
+  }
+
   if (viewMode === 'privacy') return <PrivacyPolicy onBack={() => setViewMode('landing')} />;
   if (viewMode === 'terms') return <TermsOfService onBack={() => setViewMode('landing')} />;
 
-  // RENDER: Landing (Home)
   if (viewMode === 'landing') {
     return (
       <div className="relative min-h-screen bg-[#FDFBD4]">
