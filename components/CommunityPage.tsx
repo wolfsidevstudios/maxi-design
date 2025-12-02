@@ -457,6 +457,397 @@ const HTML_WEB_DASHBOARD = `
    </div>
 </div>`;
 
+const HTML_MEDITATION = `
+<div class="bg-teal-50 min-h-screen font-sans text-teal-900">
+   <div class="p-6 pt-12">
+      <div class="flex justify-between items-center mb-10">
+         <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="18" x2="20" y2="18"/></svg>
+         </div>
+         <h1 class="font-serif text-2xl font-bold">Zen Master</h1>
+         <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+         </div>
+      </div>
+
+      <div class="text-center mb-12">
+         <div class="text-sm font-medium uppercase tracking-widest text-teal-600 mb-2">Daily Focus</div>
+         <h2 class="text-4xl font-serif font-medium mb-6">Breathe In,<br>Breathe Out</h2>
+         
+         <div class="w-64 h-64 mx-auto rounded-full bg-teal-200/50 flex items-center justify-center relative">
+            <div class="absolute inset-0 border border-teal-300 rounded-full animate-ping opacity-20"></div>
+            <div class="w-48 h-48 bg-teal-500 rounded-full flex items-center justify-center text-white text-3xl font-bold shadow-xl">
+               10:00
+            </div>
+         </div>
+      </div>
+
+      <div class="bg-white rounded-[2rem] p-6 shadow-xl">
+         <h3 class="font-bold text-lg mb-4">Recommended Sessions</h3>
+         <div class="space-y-4">
+            <div class="flex items-center gap-4 p-3 hover:bg-teal-50 rounded-xl transition-colors cursor-pointer">
+               <div class="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center text-orange-500">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2"/><path d="M12 21v2"/><path d="M4.22 4.22l1.42 1.42"/><path d="M18.36 18.36l1.42 1.42"/><path d="M1 12h2"/><path d="M21 12h2"/><path d="M4.22 19.78l1.42-1.42"/><path d="M18.36 5.64l1.42-1.42"/></svg>
+               </div>
+               <div class="flex-1">
+                  <div class="font-bold">Morning Energy</div>
+                  <div class="text-xs text-gray-500">5 min • Focus</div>
+               </div>
+               <button class="w-8 h-8 rounded-full bg-teal-500 text-white flex items-center justify-center">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+               </button>
+            </div>
+             <div class="flex items-center gap-4 p-3 hover:bg-teal-50 rounded-xl transition-colors cursor-pointer">
+               <div class="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-500">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+               </div>
+               <div class="flex-1">
+                  <div class="font-bold">Deep Sleep</div>
+                  <div class="text-xs text-gray-500">20 min • Relax</div>
+               </div>
+               <button class="w-8 h-8 rounded-full bg-teal-500 text-white flex items-center justify-center">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+               </button>
+            </div>
+         </div>
+      </div>
+   </div>
+</div>`;
+
+const HTML_FOOD = `
+<div class="bg-gray-50 min-h-screen font-sans pb-24">
+   <div class="sticky top-0 bg-white z-20 px-6 py-4 shadow-sm">
+      <div class="text-xs text-gray-400 font-bold uppercase tracking-widest mb-1">Delivering to</div>
+      <div class="flex items-center gap-2 text-orange-500 font-black text-lg cursor-pointer">
+         San Francisco, CA <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m6 9 6 6 6-6"/></svg>
+      </div>
+   </div>
+
+   <div class="p-6">
+      <div class="relative mb-8">
+         <input type="text" placeholder="Search for burgers, sushi..." class="w-full bg-white border-none rounded-2xl py-4 pl-12 pr-4 shadow-sm font-medium text-gray-700 outline-none" />
+         <svg class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      </div>
+
+      <div class="flex gap-4 overflow-x-auto pb-4 no-scrollbar mb-6">
+         <div class="bg-orange-500 text-white px-6 py-2 rounded-full font-bold shadow-lg shadow-orange-500/30 whitespace-nowrap">🍔 Burger</div>
+         <div class="bg-white text-gray-600 px-6 py-2 rounded-full font-bold shadow-sm whitespace-nowrap">🍕 Pizza</div>
+         <div class="bg-white text-gray-600 px-6 py-2 rounded-full font-bold shadow-sm whitespace-nowrap">🍣 Sushi</div>
+         <div class="bg-white text-gray-600 px-6 py-2 rounded-full font-bold shadow-sm whitespace-nowrap">🥗 Healthy</div>
+      </div>
+
+      <h2 class="font-black text-2xl mb-4">Popular Near You</h2>
+      
+      <div class="space-y-6">
+         <!-- Card 1 -->
+         <div class="bg-white rounded-3xl overflow-hidden shadow-lg group cursor-pointer">
+            <div class="h-48 relative">
+               <img src="https://picsum.photos/id/488/600/400" class="w-full h-full object-cover" />
+               <div class="absolute top-4 right-4 bg-white px-2 py-1 rounded-lg font-black text-xs shadow-md">25-30 min</div>
+               <button class="absolute bottom-[-20px] right-6 w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5v14"/></svg>
+               </button>
+            </div>
+            <div class="p-6 pt-8">
+               <h3 class="font-black text-xl mb-1">Double Cheeseburger</h3>
+               <div class="flex items-center gap-1 text-sm font-medium text-gray-500 mb-3">
+                  <span class="text-orange-500 flex items-center gap-1 font-bold">★ 4.8</span> • Burger King • $$
+               </div>
+               <div class="flex items-center gap-2">
+                  <span class="bg-gray-100 text-gray-600 px-2 py-1 rounded text-xs font-bold">Free Delivery</span>
+                  <span class="bg-red-100 text-red-600 px-2 py-1 rounded text-xs font-bold">🔥 Hot</span>
+               </div>
+            </div>
+         </div>
+
+         <!-- Card 2 -->
+         <div class="bg-white rounded-3xl overflow-hidden shadow-lg group cursor-pointer">
+            <div class="h-48 relative">
+               <img src="https://picsum.photos/id/225/600/400" class="w-full h-full object-cover" />
+               <div class="absolute top-4 right-4 bg-white px-2 py-1 rounded-lg font-black text-xs shadow-md">15-20 min</div>
+            </div>
+            <div class="p-6">
+               <h3 class="font-black text-xl mb-1">Morning Bagel</h3>
+               <div class="flex items-center gap-1 text-sm font-medium text-gray-500">
+                  <span class="text-orange-500 flex items-center gap-1 font-bold">★ 4.9</span> • The Bagel Shop • $
+               </div>
+            </div>
+         </div>
+      </div>
+   </div>
+   
+   <!-- Tab Bar -->
+   <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 p-4 flex justify-around items-center z-50">
+      <button class="flex flex-col items-center gap-1 text-orange-500">
+         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      </button>
+      <button class="flex flex-col items-center gap-1 text-gray-400">
+         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 14c1.49-1.28 3.6-2.34 3.6-4.44C22.59 7.05 19.84 3 14.46 3c-5.99 0-11 5-11 5v14c0 1.66 1.34 3 3 3h5.71c2.22 0 4.49-1 6.83-2.72 2.37-1.74 2.67-2.98 2.67-3.24 0-.34-.32-.78-2.67-5.04"/></svg>
+      </button>
+      <button class="flex flex-col items-center gap-1 text-gray-400">
+         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      </button>
+   </div>
+</div>`;
+
+const HTML_TRAVEL = `
+<div class="bg-black min-h-screen font-sans text-white relative">
+   <img src="https://picsum.photos/id/1039/400/800" class="absolute inset-0 w-full h-full object-cover opacity-60" />
+   <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/50"></div>
+
+   <div class="relative z-10 p-6 flex flex-col h-screen">
+      <div class="flex justify-between items-center">
+         <button class="w-10 h-10 bg-white/20 backdrop-blur rounded-full flex items-center justify-center">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+         </button>
+         <div class="text-sm font-bold uppercase tracking-widest">Explore</div>
+         <button class="w-10 h-10 bg-white/20 backdrop-blur rounded-full flex items-center justify-center">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+         </button>
+      </div>
+
+      <div class="mt-auto mb-10">
+         <div class="flex items-center gap-2 mb-2 animate-pulse">
+            <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
+            <span class="text-xs font-bold uppercase tracking-widest text-blue-300">Popular Now</span>
+         </div>
+         <h1 class="text-5xl font-black mb-4 leading-none">Kyoto,<br>Japan</h1>
+         <p class="text-gray-300 mb-8 max-w-[80%] leading-relaxed text-sm">Experience the ancient temples and vibrant streets of Japan's cultural capital.</p>
+         
+         <div class="flex gap-4">
+            <button class="flex-1 bg-blue-600 text-white py-4 rounded-xl font-bold uppercase tracking-widest shadow-lg shadow-blue-600/30">Book Flight</button>
+            <button class="w-16 bg-white/10 backdrop-blur rounded-xl flex items-center justify-center font-bold text-2xl">♡</button>
+         </div>
+      </div>
+
+      <div class="pb-6 overflow-x-auto no-scrollbar flex gap-4">
+         <div class="min-w-[140px] h-20 bg-white/10 backdrop-blur rounded-xl p-3 flex items-center gap-3 border border-white/10">
+            <img src="https://picsum.photos/id/1015/100/100" class="w-12 h-12 rounded-lg object-cover" />
+            <div>
+               <div class="font-bold text-sm">River</div>
+               <div class="text-[10px] text-gray-400">4.8 ★</div>
+            </div>
+         </div>
+         <div class="min-w-[140px] h-20 bg-white/10 backdrop-blur rounded-xl p-3 flex items-center gap-3 border border-white/10">
+            <img src="https://picsum.photos/id/1036/100/100" class="w-12 h-12 rounded-lg object-cover" />
+            <div>
+               <div class="font-bold text-sm">Snow</div>
+               <div class="text-[10px] text-gray-400">4.9 ★</div>
+            </div>
+         </div>
+         <div class="min-w-[140px] h-20 bg-white/10 backdrop-blur rounded-xl p-3 flex items-center gap-3 border border-white/10">
+            <img src="https://picsum.photos/id/1040/100/100" class="w-12 h-12 rounded-lg object-cover" />
+            <div>
+               <div class="font-bold text-sm">Castle</div>
+               <div class="text-[10px] text-gray-400">4.7 ★</div>
+            </div>
+         </div>
+      </div>
+   </div>
+</div>`;
+
+const HTML_CHAT = `
+<div class="bg-white min-h-screen font-sans flex flex-col">
+   <!-- Header -->
+   <div class="p-4 pt-12 border-b border-gray-100 flex justify-between items-center sticky top-0 bg-white/90 backdrop-blur z-10">
+      <div class="flex items-center gap-3">
+         <div class="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center font-bold text-indigo-600">JD</div>
+         <h1 class="text-xl font-black">Messages</h1>
+      </div>
+      <button class="w-10 h-10 bg-black text-white rounded-full flex items-center justify-center shadow-md">
+         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      </button>
+   </div>
+
+   <!-- Stories -->
+   <div class="py-4 px-4 overflow-x-auto no-scrollbar flex gap-4 border-b border-gray-100">
+      <div class="flex flex-col items-center gap-1">
+         <div class="w-14 h-14 rounded-full bg-gray-100 border-2 border-dashed border-gray-300 flex items-center justify-center text-gray-400 cursor-pointer">+</div>
+         <span class="text-[10px] font-bold text-gray-400 uppercase">My Story</span>
+      </div>
+      <div class="flex flex-col items-center gap-1">
+         <div class="w-14 h-14 rounded-full p-0.5 border-2 border-indigo-500">
+            <img src="https://picsum.photos/id/64/100/100" class="w-full h-full rounded-full object-cover" />
+         </div>
+         <span class="text-[10px] font-bold">Sarah</span>
+      </div>
+      <div class="flex flex-col items-center gap-1">
+         <div class="w-14 h-14 rounded-full p-0.5 border-2 border-indigo-500">
+            <img src="https://picsum.photos/id/65/100/100" class="w-full h-full rounded-full object-cover" />
+         </div>
+         <span class="text-[10px] font-bold">Mike</span>
+      </div>
+       <div class="flex flex-col items-center gap-1">
+         <div class="w-14 h-14 rounded-full p-0.5 border-2 border-gray-200">
+            <img src="https://picsum.photos/id/91/100/100" class="w-full h-full rounded-full object-cover grayscale" />
+         </div>
+         <span class="text-[10px] font-bold text-gray-400">Alex</span>
+      </div>
+   </div>
+
+   <!-- List -->
+   <div class="flex-1 p-4 space-y-2">
+      <div class="flex items-center gap-4 p-3 bg-indigo-50 rounded-2xl cursor-pointer">
+         <div class="relative">
+            <img src="https://picsum.photos/id/64/100/100" class="w-12 h-12 rounded-full object-cover" />
+            <div class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
+         </div>
+         <div class="flex-1 min-w-0">
+            <div class="flex justify-between items-baseline mb-1">
+               <h3 class="font-bold text-sm">Sarah Jenkins</h3>
+               <span class="text-[10px] font-bold text-indigo-500">2m ago</span>
+            </div>
+            <p class="text-sm text-gray-600 truncate font-medium">Are we still on for coffee tomorrow?</p>
+         </div>
+         <div class="w-5 h-5 bg-indigo-500 rounded-full flex items-center justify-center text-white text-[10px] font-bold">2</div>
+      </div>
+
+       <div class="flex items-center gap-4 p-3 hover:bg-gray-50 rounded-2xl cursor-pointer transition-colors">
+         <div class="relative">
+            <img src="https://picsum.photos/id/65/100/100" class="w-12 h-12 rounded-full object-cover" />
+         </div>
+         <div class="flex-1 min-w-0">
+            <div class="flex justify-between items-baseline mb-1">
+               <h3 class="font-bold text-sm">Mike Ross</h3>
+               <span class="text-[10px] font-bold text-gray-400">1h ago</span>
+            </div>
+            <p class="text-sm text-gray-400 truncate">Sent a photo.</p>
+         </div>
+      </div>
+      
+      <div class="flex items-center gap-4 p-3 hover:bg-gray-50 rounded-2xl cursor-pointer transition-colors">
+         <div class="relative">
+             <div class="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 font-bold">T</div>
+         </div>
+         <div class="flex-1 min-w-0">
+            <div class="flex justify-between items-baseline mb-1">
+               <h3 class="font-bold text-sm">Team Alpha</h3>
+               <span class="text-[10px] font-bold text-gray-400">Yesterday</span>
+            </div>
+            <p class="text-sm text-gray-400 truncate">Meeting updated to 3 PM.</p>
+         </div>
+      </div>
+   </div>
+</div>`;
+
+const HTML_CRM_WEB = `
+<div class="min-h-screen bg-gray-50 font-sans text-gray-900 flex">
+  <div class="w-64 bg-slate-900 text-white flex flex-col">
+    <div class="p-6 font-black text-2xl tracking-tight">CRM<span class="text-blue-500">Pro</span></div>
+    <div class="flex-1 px-4 py-4 space-y-1">
+      <div class="px-2 text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Menu</div>
+      <a href="#" class="block px-4 py-2 bg-blue-600 rounded-lg font-bold text-sm">Dashboard</a>
+      <a href="#" class="block px-4 py-2 hover:bg-slate-800 rounded-lg font-medium text-sm text-slate-300">Contacts</a>
+      <a href="#" class="block px-4 py-2 hover:bg-slate-800 rounded-lg font-medium text-sm text-slate-300">Deals</a>
+    </div>
+  </div>
+  
+  <div class="flex-1 p-8">
+     <div class="flex justify-between items-center mb-8">
+        <h1 class="text-3xl font-bold">Contacts</h1>
+        <button class="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold text-sm shadow-md hover:bg-blue-700 transition-colors">+ Add Contact</button>
+     </div>
+
+     <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div class="p-4 border-b border-gray-200 flex gap-4">
+           <input type="text" placeholder="Search contacts..." class="bg-gray-50 border border-gray-300 rounded-lg px-4 py-2 text-sm w-64 outline-none focus:border-blue-500" />
+           <select class="bg-gray-50 border border-gray-300 rounded-lg px-4 py-2 text-sm outline-none"><option>All Statuses</option></select>
+        </div>
+        <table class="w-full text-left text-sm">
+           <thead class="bg-gray-50 text-gray-500 font-bold uppercase text-xs">
+              <tr>
+                 <th class="px-6 py-4">Name</th>
+                 <th class="px-6 py-4">Company</th>
+                 <th class="px-6 py-4">Status</th>
+                 <th class="px-6 py-4">Last Contact</th>
+                 <th class="px-6 py-4 text-right">Actions</th>
+              </tr>
+           </thead>
+           <tbody class="divide-y divide-gray-100">
+              <tr class="hover:bg-blue-50/50 transition-colors group">
+                 <td class="px-6 py-4 font-bold flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center">JD</div>
+                    John Doe
+                 </td>
+                 <td class="px-6 py-4 text-gray-600">TechCorp Inc.</td>
+                 <td class="px-6 py-4"><span class="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-bold">Lead</span></td>
+                 <td class="px-6 py-4 text-gray-500">2 days ago</td>
+                 <td class="px-6 py-4 text-right">
+                    <button class="text-gray-400 hover:text-blue-600 font-bold">Edit</button>
+                 </td>
+              </tr>
+              <tr class="hover:bg-blue-50/50 transition-colors group">
+                 <td class="px-6 py-4 font-bold flex items-center gap-3">
+                    <img src="https://picsum.photos/id/64/100/100" class="w-8 h-8 rounded-full object-cover" />
+                    Sarah Smith
+                 </td>
+                 <td class="px-6 py-4 text-gray-600">Design Studio</td>
+                 <td class="px-6 py-4"><span class="bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-xs font-bold">Customer</span></td>
+                 <td class="px-6 py-4 text-gray-500">Yesterday</td>
+                 <td class="px-6 py-4 text-right">
+                    <button class="text-gray-400 hover:text-blue-600 font-bold">Edit</button>
+                 </td>
+              </tr>
+           </tbody>
+        </table>
+     </div>
+  </div>
+</div>`;
+
+const HTML_LANDING_WEB = `
+<div class="min-h-screen bg-white font-sans">
+  <nav class="flex justify-between items-center p-6 max-w-6xl mx-auto">
+     <div class="font-black text-2xl tracking-tighter">Acme<span class="text-purple-600">.ai</span></div>
+     <div class="flex gap-6 text-sm font-bold text-gray-600">
+        <a href="#" class="hover:text-black">Features</a>
+        <a href="#" class="hover:text-black">Pricing</a>
+        <a href="#" class="hover:text-black">Blog</a>
+     </div>
+     <button class="bg-black text-white px-5 py-2 rounded-full font-bold text-sm hover:scale-105 transition-transform">Get Started</button>
+  </nav>
+
+  <header class="text-center pt-20 pb-32 px-6">
+     <div class="inline-block bg-purple-100 text-purple-700 px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest mb-6">New Feature Release</div>
+     <h1 class="text-5xl md:text-7xl font-black tracking-tighter mb-6 leading-[0.9]">
+        Automate your <br/>
+        <span class="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-500">workflow instantly.</span>
+     </h1>
+     <p class="text-xl text-gray-600 max-w-2xl mx-auto mb-10 leading-relaxed font-medium">
+        Stop doing repetitive tasks manually. Our AI agent handles the busywork so you can focus on what matters.
+     </p>
+     <div class="flex justify-center gap-4">
+        <button class="bg-purple-600 text-white px-8 py-4 rounded-xl font-bold text-lg shadow-xl shadow-purple-600/30 hover:bg-purple-500 transition-colors">Start Free Trial</button>
+        <button class="bg-white text-gray-900 border border-gray-200 px-8 py-4 rounded-xl font-bold text-lg hover:bg-gray-50 transition-colors">View Demo</button>
+     </div>
+  </header>
+
+  <section class="bg-gray-50 py-24 border-y border-gray-100">
+     <div class="max-w-6xl mx-auto px-6 grid md:grid-cols-3 gap-8">
+        <div class="bg-white p-8 rounded-2xl shadow-sm border border-gray-200">
+           <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center text-purple-600 mb-6">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20"/><path d="M2 12h20"/></svg>
+           </div>
+           <h3 class="font-bold text-xl mb-2">Connect Apps</h3>
+           <p class="text-gray-600">Integrate with 500+ tools instantly without writing code.</p>
+        </div>
+        <div class="bg-white p-8 rounded-2xl shadow-sm border border-gray-200">
+           <div class="w-12 h-12 bg-pink-100 rounded-lg flex items-center justify-center text-pink-600 mb-6">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m22 11-10 10-10-10"/><path d="M12 2v19"/></svg>
+           </div>
+           <h3 class="font-bold text-xl mb-2">Real-time Sync</h3>
+           <p class="text-gray-600">Data updates across all your platforms in milliseconds.</p>
+        </div>
+        <div class="bg-white p-8 rounded-2xl shadow-sm border border-gray-200">
+           <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600 mb-6">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+           </div>
+           <h3 class="font-bold text-xl mb-2">Enterprise Security</h3>
+           <p class="text-gray-600">SOC2 Type II compliant with end-to-end encryption.</p>
+        </div>
+     </div>
+  </section>
+</div>`;
+
 const TEMPLATES: Template[] = [
   // --- MOBILE TEMPLATES ---
   {
@@ -490,6 +881,48 @@ const TEMPLATES: Template[] = [
     code: HTML_FITNESS
   },
   
+  // --- UNIQUE MOBILE TEMPLATES ---
+  { 
+     id: 'mobile-2', 
+     name: 'Meditation Zen', 
+     description: 'Calming mindfulness app with session timer.', 
+     category: 'Health', 
+     thumbnailGradient: 'from-teal-200 to-cyan-300', 
+     type: 'mobile', 
+     theme: {fontBody:'Inter', fontHeading:'Playfair Display', radius:32, mode:'light', primaryColor:'#14B8A6'}, 
+     code: HTML_MEDITATION 
+  },
+  { 
+     id: 'mobile-3', 
+     name: 'Food Delivery', 
+     description: 'Vibrant food ordering feed with categories.', 
+     category: 'Food', 
+     thumbnailGradient: 'from-yellow-400 to-orange-500', 
+     type: 'mobile', 
+     theme: {fontBody:'Inter', fontHeading:'Inter', radius:16, mode:'light', primaryColor:'#F59E0B'}, 
+     code: HTML_FOOD 
+  },
+  { 
+     id: 'mobile-4', 
+     name: 'Travel Guide', 
+     description: 'Immersive destination guide with large imagery.', 
+     category: 'Travel', 
+     thumbnailGradient: 'from-blue-400 to-indigo-500', 
+     type: 'mobile', 
+     theme: {fontBody:'Inter', fontHeading:'Inter', radius:24, mode:'light', primaryColor:'#3B82F6'}, 
+     code: HTML_TRAVEL 
+  },
+  { 
+     id: 'mobile-5', 
+     name: 'Chat App', 
+     description: 'Clean messaging interface with stories.', 
+     category: 'Social', 
+     thumbnailGradient: 'from-violet-400 to-purple-500', 
+     type: 'mobile', 
+     theme: {fontBody:'Inter', fontHeading:'Inter', radius:12, mode:'light', primaryColor:'#8B5CF6'}, 
+     code: HTML_CHAT 
+  },
+  
   // --- WEB TEMPLATES ---
   {
      id: 'web-1',
@@ -501,19 +934,26 @@ const TEMPLATES: Template[] = [
      theme: { fontBody: 'Inter', fontHeading: 'Inter', radius: 8, mode: 'light', primaryColor: '#2563EB' },
      code: HTML_WEB_DASHBOARD
   },
-
-  // ... (For brevity in this XML response, I'm mapping the other requested templates to these 4 robust layouts. 
-  // In a real production codebase, I would have unique HTML strings for each of the 30. 
-  // I will map a few more distinct ones below to satisfy the "variety" request without hitting output limits.)
-
-  { id: 'mobile-2', name: 'Meditation Zen', description: 'Calming mindfulness app', category: 'Health', thumbnailGradient: 'from-teal-200 to-cyan-300', type: 'mobile', theme: {fontBody:'Inter', fontHeading:'Playfair Display', radius:32, mode:'light', primaryColor:'#14B8A6'}, code: HTML_ECOMMERCE.replace('Supreme', 'Zen').replace('bg-white', 'bg-teal-50') },
-  { id: 'mobile-3', name: 'Food Delivery', description: 'Vibrant food ordering feed', category: 'Food', thumbnailGradient: 'from-yellow-400 to-orange-500', type: 'mobile', theme: {fontBody:'Inter', fontHeading:'Inter', radius:16, mode:'light', primaryColor:'#F59E0B'}, code: HTML_ECOMMERCE.replace('Supreme', 'Tasty').replace('Streetwear', 'Burgers') },
-  { id: 'mobile-4', name: 'Travel Guide', description: 'Immersive travel destination', category: 'Travel', thumbnailGradient: 'from-blue-400 to-indigo-500', type: 'mobile', theme: {fontBody:'Inter', fontHeading:'Inter', radius:24, mode:'light', primaryColor:'#3B82F6'}, code: HTML_ECOMMERCE },
-  { id: 'mobile-5', name: 'Chat App', description: 'Clean messaging interface', category: 'Social', thumbnailGradient: 'from-violet-400 to-purple-500', type: 'mobile', theme: {fontBody:'Inter', fontHeading:'Inter', radius:12, mode:'light', primaryColor:'#8B5CF6'}, code: HTML_CRYPTO.replace('Crypto', 'Chat') },
-  
-  // Web clones
-  { id: 'web-2', name: 'CRM System', description: 'Customer management table', category: 'Business', thumbnailGradient: 'from-slate-600 to-slate-800', type: 'web', theme: {fontBody:'Inter', fontHeading:'Inter', radius:4, mode:'light', primaryColor:'#475569'}, code: HTML_WEB_DASHBOARD.replace('SaaSify', 'CRM Pro').replace('blue-600', 'slate-700') },
-  { id: 'web-3', name: 'Landing Page', description: 'High conversion hero section', category: 'Marketing', thumbnailGradient: 'from-purple-500 to-pink-500', type: 'web', theme: {fontBody:'Inter', fontHeading:'Inter', radius:8, mode:'light', primaryColor:'#9333EA'}, code: HTML_WEB_DASHBOARD },
+  { 
+     id: 'web-2', 
+     name: 'CRM System', 
+     description: 'Customer management table view.', 
+     category: 'Business', 
+     thumbnailGradient: 'from-slate-600 to-slate-800', 
+     type: 'web', 
+     theme: {fontBody:'Inter', fontHeading:'Inter', radius:4, mode:'light', primaryColor:'#475569'}, 
+     code: HTML_CRM_WEB 
+  },
+  { 
+     id: 'web-3', 
+     name: 'Landing Page', 
+     description: 'High conversion hero section with features.', 
+     category: 'Marketing', 
+     thumbnailGradient: 'from-purple-500 to-pink-500', 
+     type: 'web', 
+     theme: {fontBody:'Inter', fontHeading:'Inter', radius:8, mode:'light', primaryColor:'#9333EA'}, 
+     code: HTML_LANDING_WEB 
+  },
 ];
 
 const CommunityPage: React.FC<CommunityPageProps> = ({ onCloneTemplate }) => {
