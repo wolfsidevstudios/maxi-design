@@ -7,9 +7,10 @@ interface MobileFrameProps {
   loadingPhase?: 'idle' | 'theming' | 'coding';
   enableEditMode?: boolean;
   onHtmlUpdate?: (newHtml: string) => void;
+  type?: 'mobile' | 'web';
 }
 
-const MobileFrame: React.FC<MobileFrameProps> = ({ htmlContent, scale = 1, loadingPhase = 'idle', enableEditMode = false, onHtmlUpdate }) => {
+const MobileFrame: React.FC<MobileFrameProps> = ({ htmlContent, scale = 1, loadingPhase = 'idle', enableEditMode = false, onHtmlUpdate, type = 'mobile' }) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
   // Send message to iframe when edit mode changes
@@ -23,7 +24,6 @@ const MobileFrame: React.FC<MobileFrameProps> = ({ htmlContent, scale = 1, loadi
   }, [enableEditMode]);
 
   // Construct the full document string for srcDoc
-  // This ensures the iframe has the Tailwind script and correct structure immediately
   const docSource = `
     <!DOCTYPE html>
     <html>
@@ -81,11 +81,9 @@ const MobileFrame: React.FC<MobileFrameProps> = ({ htmlContent, scale = 1, loadi
             }
 
             if (type === 'UPDATE_STYLE' && selectedElement) {
-               // Apply style updates directly to the selected element
                const { key, value } = payload;
                
                if (key === 'textContent') {
-                  // Only update text nodes to avoid destroying children
                   if (selectedElement.childNodes.length === 1 && selectedElement.childNodes[0].nodeType === 3) {
                      selectedElement.textContent = value;
                   } else if (selectedElement.childNodes.length === 0) {
@@ -130,7 +128,6 @@ const MobileFrame: React.FC<MobileFrameProps> = ({ htmlContent, scale = 1, loadi
             e.preventDefault();
             e.stopPropagation();
             
-            // Clear previous selection
             if (selectedElement) {
                selectedElement.classList.remove('maxi-selected');
                selectedElement.removeAttribute('data-maxi-selected');
@@ -141,12 +138,11 @@ const MobileFrame: React.FC<MobileFrameProps> = ({ htmlContent, scale = 1, loadi
             selectedElement.classList.add('maxi-selected');
             selectedElement.setAttribute('data-maxi-selected', 'true');
             
-            // Extract Computed Styles
             const computed = window.getComputedStyle(selectedElement);
             
             const styles = {
                tagName: selectedElement.tagName.toLowerCase(),
-               textContent: selectedElement.textContent.substring(0, 100), // Limit length
+               textContent: selectedElement.textContent.substring(0, 100),
                color: rgbToHex(computed.color),
                backgroundColor: rgbToHex(computed.backgroundColor),
                fontSize: computed.fontSize,
@@ -168,25 +164,45 @@ const MobileFrame: React.FC<MobileFrameProps> = ({ htmlContent, scale = 1, loadi
     </html>
   `;
 
+  const width = type === 'web' ? '1280px' : '375px';
+  const height = type === 'web' ? '832px' : '812px'; // Taller for web to account for chrome
+  const borderRadius = type === 'web' ? '12px' : '40px';
+
   return (
     <div 
       className="relative transition-all duration-500 ease-in-out"
       style={{ 
-        width: '375px', 
-        height: '812px',
+        width: width, 
+        height: height,
         transform: `scale(${scale})`,
-        transformOrigin: 'center center'
+        transformOrigin: 'top center' // Pivot from top to make web frame easier to see
       }}
     >
       {/* Container with Neo-Brutalist Border */}
-      <div className={`relative w-full h-full bg-white rounded-[40px] overflow-hidden transition-all duration-700 border-[3px] border-black ${loadingPhase !== 'idle' ? 'shadow-[8px_8px_0px_0px_rgba(96,165,250,0.4)]' : 'shadow-[8px_8px_0px_0px_rgba(0,0,0,0.15)]'}`}>
+      <div 
+        className={`relative w-full h-full bg-white overflow-hidden transition-all duration-700 border-[3px] border-black ${loadingPhase !== 'idle' ? 'shadow-[8px_8px_0px_0px_rgba(96,165,250,0.4)]' : 'shadow-[8px_8px_0px_0px_rgba(0,0,0,0.15)]'}`}
+        style={{ borderRadius: borderRadius }}
+      >
         
+        {/* Web Browser Chrome */}
+        {type === 'web' && (
+           <div className="h-8 bg-gray-100 border-b-2 border-black flex items-center px-4 gap-2">
+              <div className="flex gap-1.5">
+                 <div className="w-3 h-3 rounded-full bg-red-400 border border-black/20"></div>
+                 <div className="w-3 h-3 rounded-full bg-yellow-400 border border-black/20"></div>
+                 <div className="w-3 h-3 rounded-full bg-green-400 border border-black/20"></div>
+              </div>
+              <div className="flex-1 mx-4 bg-white border border-gray-300 h-5 rounded flex items-center px-2">
+                 <span className="text-[10px] text-gray-400 font-mono">localhost:3000</span>
+              </div>
+           </div>
+        )}
+
         {/* Theming Gradient Border Animation */}
         {loadingPhase === 'theming' && (
-          <div className="absolute inset-0 z-30 pointer-events-none rounded-[36px] overflow-hidden">
+          <div className="absolute inset-0 z-30 pointer-events-none overflow-hidden" style={{borderRadius}}>
              <div className="absolute -inset-[100%] animate-[spin_4s_linear_infinite] bg-[conic-gradient(from_0deg,transparent_0deg,#60A5FA_90deg,transparent_180deg,#34D399_270deg,transparent_360deg)] opacity-50"></div>
-             <div className="absolute inset-[4px] bg-white rounded-[32px]"></div>
-             <div className="absolute inset-0 rounded-[36px] shadow-[inset_0_0_60px_rgba(59,130,246,0.1)]"></div>
+             <div className="absolute inset-[4px] bg-white" style={{borderRadius: `calc(${borderRadius} - 4px)`}}></div>
           </div>
         )}
 
@@ -226,7 +242,7 @@ const MobileFrame: React.FC<MobileFrameProps> = ({ htmlContent, scale = 1, loadi
           </div>
         )}
         
-        {/* Waiting / Empty State (only if idle and no html) */}
+        {/* Waiting / Empty State */}
         {loadingPhase === 'idle' && !htmlContent && (
            <div className="absolute inset-0 z-10 flex items-center justify-center bg-gray-50 text-gray-400 font-bold uppercase tracking-wider text-sm pointer-events-none">
               Waiting for code...
@@ -238,7 +254,8 @@ const MobileFrame: React.FC<MobileFrameProps> = ({ htmlContent, scale = 1, loadi
           ref={iframeRef}
           srcDoc={docSource}
           title="Mobile Preview"
-          className="w-full h-full bg-white relative z-10 rounded-[36px]"
+          className="w-full h-full bg-white relative z-10"
+          style={{ height: type === 'web' ? 'calc(100% - 32px)' : '100%' }} // Adjust for chrome bar
           sandbox="allow-scripts allow-same-origin allow-forms" 
         />
       </div>

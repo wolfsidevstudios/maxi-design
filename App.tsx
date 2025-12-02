@@ -9,7 +9,7 @@ import StudioPanel from './components/StudioPanel';
 import PrivacyPolicy from './components/PrivacyPolicy';
 import TermsOfService from './components/TermsOfService';
 import NotificationSystem, { NotificationItem } from './components/Notification';
-import MarketingPage from './components/WaitlistPage'; // Reusing file, updated component
+import MarketingPage from './components/WaitlistPage'; 
 import LoginPage from './components/LoginPage';
 import OnboardingPage from './components/OnboardingPage';
 import CodeEditor from './components/CodeEditor';
@@ -61,7 +61,6 @@ import { Message, ThemeSettings, ViewMode, ProjectData, AppSettings, Screen, Mod
 import { Chat } from '@google/genai';
 import JSZip from 'jszip';
 
-// Extend ViewMode to include marketing, login, onboarding
 type ExtendedViewMode = ViewMode | 'marketing' | 'login' | 'onboarding';
 
 function App() {
@@ -71,23 +70,18 @@ function App() {
   });
 
   const [viewMode, setViewMode] = useState<ExtendedViewMode>(() => {
-     // Check for login
      const user = localStorage.getItem('maxi_user');
      const onboardingComplete = localStorage.getItem('maxi_onboarding_complete');
      
      if (user) {
-        // If logged in, check if they finished onboarding
         return onboardingComplete === 'true' ? 'landing' : 'onboarding';
      }
-     
-     // Default to marketing page for new visitors
      return 'marketing';
   });
 
   const [landingTab, setLandingTab] = useState<'create' | 'projects' | 'community'>('create');
   const [activeTab, setActiveTab] = useState<'chat' | 'theme' | 'screens' | 'studio' | 'code'>('chat');
   
-  // Settings & Modal
   const [showSettings, setShowSettings] = useState(false);
   const [settings, setSettings] = useState<AppSettings>(() => {
     try {
@@ -124,7 +118,6 @@ function App() {
     }
   });
 
-  // Notifications
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
 
   const addNotification = (type: 'error' | 'warning' | 'success' | 'info', title: string, message: string, actionLabel?: string, onAction?: () => void) => {
@@ -138,12 +131,10 @@ function App() {
     setNotifications(prev => prev.filter(n => n.id !== id));
   };
 
-  // Persist Global Settings
   useEffect(() => {
     localStorage.setItem('sleek_settings', JSON.stringify(settings));
   }, [settings]);
 
-  // Projects State
   const [projects, setProjects] = useState<ProjectData[]>(() => {
     try {
       const saved = localStorage.getItem('sleek_projects');
@@ -155,11 +146,9 @@ function App() {
   });
   const [currentProjectId, setCurrentProjectId] = useState<string | null>(null);
 
-  // Screen State
   const [screens, setScreens] = useState<Screen[]>([]);
   const [activeScreenId, setActiveScreenId] = useState<string | null>(null);
 
-  // Chat State (Main)
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [attachedImage, setAttachedImage] = useState<string | null>(null);
@@ -168,18 +157,15 @@ function App() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [designPhase, setDesignPhase] = useState<'idle' | 'theming' | 'coding'>('idle');
   
-  // Chat State (Race Challenger)
   const [isRaceMode, setIsRaceMode] = useState(false);
   const [challengerMessages, setChallengerMessages] = useState<Message[]>([]);
   const [challengerHtmlCode, setChallengerHtmlCode] = useState('');
   const [challengerDesignPhase, setChallengerDesignPhase] = useState<'idle' | 'theming' | 'coding'>('idle');
 
-  // Refs
   const chatSessionRef = useRef<Chat | null>(null);
   const challengerSessionRef = useRef<Chat | null>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
-  // Design State (Main)
   const [zoom, setZoom] = useState(0.7);
   const [theme, setTheme] = useState<ThemeSettings>({
     fontBody: 'Inter',
@@ -189,29 +175,24 @@ function App() {
     primaryColor: '#FF6B4A'
   });
 
-  // Canvas Tools State
   const [activeTool, setActiveTool] = useState<'select' | 'pan' | 'edit'>('select');
   const [panPosition, setPanPosition] = useState({ x: 0, y: 0 });
   const [isPanning, setIsPanning] = useState(false);
   const lastMousePos = useRef({ x: 0, y: 0 });
   
-  // Studio / Edit State
   const [selectedElementStyles, setSelectedElementStyles] = useState<any>(null);
   const [editInputValue, setEditInputValue] = useState('');
 
-  // Status State
   const [statusSteps, setStatusSteps] = useState({
     analyzed: false,
     planned: false,
     generating: false
   });
 
-  // Persistence
   useEffect(() => {
     localStorage.setItem('sleek_projects', JSON.stringify(projects));
   }, [projects]);
 
-  // Auto-save
   useEffect(() => {
     if (currentProjectId && viewMode === 'editor') {
       setProjects(prev => prev.map(p => {
@@ -222,7 +203,7 @@ function App() {
             screens,
             activeScreenId: activeScreenId || p.activeScreenId,
             theme,
-            settings, // Save project settings
+            settings, 
             lastEdited: Date.now()
           };
         }
@@ -231,7 +212,6 @@ function App() {
     }
   }, [messages, screens, activeScreenId, theme, settings, currentProjectId, viewMode]);
 
-  // Init Sessions
   useEffect(() => {
     if (viewMode === 'editor') {
       try {
@@ -251,7 +231,6 @@ function App() {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isGenerating]);
 
-  // Listen for Element Events from Iframe
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
       if (event.data.type === 'ELEMENT_SELECTED') {
@@ -271,7 +250,6 @@ function App() {
     }
   }, [activeTool]);
 
-  // Active Screen HTML Accessor
   const getActiveScreenHtml = () => {
      return screens.find(s => s.id === activeScreenId)?.html || '';
   };
@@ -334,7 +312,8 @@ function App() {
         mode: 'light',
         primaryColor: '#FF6B4A'
       },
-      settings: settings 
+      settings: settings,
+      type: 'mobile' 
     };
 
     setProjects(prev => [newProject, ...prev]);
@@ -390,7 +369,8 @@ function App() {
         screens: [initialScreen],
         activeScreenId: 'screen-1',
         theme: template.theme,
-        settings: settings
+        settings: settings,
+        type: template.type 
      };
 
      setProjects(prev => [newProject, ...prev]);
@@ -403,14 +383,14 @@ function App() {
      setChallengerHtmlCode('');
      setTheme(template.theme);
      setPanPosition({ x: 0, y: 0 });
-     setZoom(0.6);
+     // Adjust initial zoom based on type
+     setZoom(template.type === 'web' ? 0.4 : 0.6);
      setIsRaceMode(false);
      setAttachedImage(null);
      setSelectedElementStyles(null);
      setActiveTool('select');
      setActiveTab('chat');
 
-     // Initialize chat with context
      chatSessionRef.current = createChatSession(initialMessages, settings.activeModel, settings.customApiKey, settings.enableThinking);
 
      setViewMode('editor');
@@ -435,7 +415,8 @@ function App() {
     if (project.settings) setSettings(project.settings);
     
     setPanPosition({ x: 0, y: 0 });
-    setZoom(0.7);
+    // Adjust zoom on load
+    setZoom(project.type === 'web' ? 0.4 : 0.7);
     setIsRaceMode(false); 
     setSelectedElementStyles(null);
     setActiveTool('select');
@@ -565,7 +546,6 @@ function App() {
          if (isMain) setStatusSteps(prev => ({ ...prev, planned: true, generating: true }));
       }, 3000);
 
-      // STRICT RULE: Only allow streaming for Pro models
       const supportsStreaming = modelName === 'gemini-3-pro-preview' || modelName === 'gemini-2.5-pro';
 
       try {
@@ -614,7 +594,6 @@ function App() {
           
           extractedHtml = extractedHtml.trim();
           
-          // Only update UI in real-time if model supports streaming and user has it enabled
           if (extractedHtml && settings.enableStreaming && supportsStreaming) {
              setPhase('coding');
              if (isMain) setStatusSteps(prev => ({ ...prev, planned: true, generating: true }));
@@ -638,7 +617,6 @@ function App() {
            finalHtml = finalCleanCode; 
         }
 
-        // Always update with the final HTML, regardless of streaming setting
         if (finalHtml) {
            setHtml(finalHtml);
         }
@@ -749,53 +727,13 @@ function App() {
     setIsPanning(false);
   };
 
-  // --- VIEW RENDERING ---
-
-  // 1. Marketing Page (Public)
-  if (viewMode === 'marketing') {
-    return <MarketingPage 
-       onNavigateToLogin={() => setViewMode('login')} 
-    />;
-  }
-  
-  // 2. Login Page
-  if (viewMode === 'login') {
-     return <LoginPage 
-        onBack={() => setViewMode('marketing')}
-        onLoginSuccess={(user) => {
-           localStorage.setItem('maxi_user', JSON.stringify(user));
-           setCurrentUser(user);
-           // After login, check if they need onboarding
-           if (localStorage.getItem('maxi_onboarding_complete') === 'true') {
-              setViewMode('landing');
-           } else {
-              setViewMode('onboarding');
-           }
-        }}
-     />
-  }
-
-  // 3. Onboarding Page (API Key Setup)
-  if (viewMode === 'onboarding') {
-     return <OnboardingPage 
-        username={currentUser?.name || 'Designer'}
-        onComplete={(apiKey) => {
-           // Save key to settings
-           const newSettings = { ...settings, customApiKey: apiKey };
-           setSettings(newSettings);
-           localStorage.setItem('sleek_settings', JSON.stringify(newSettings));
-           // Mark onboarding as complete
-           localStorage.setItem('maxi_onboarding_complete', 'true');
-           setViewMode('landing');
-        }}
-     />
-  }
-
-  // 4. Privacy & Terms
+  // --- RENDER ---
+  if (viewMode === 'marketing') return <MarketingPage onNavigateToLogin={() => setViewMode('login')} />;
+  if (viewMode === 'login') return <LoginPage onBack={() => setViewMode('marketing')} onLoginSuccess={(user) => { localStorage.setItem('maxi_user', JSON.stringify(user)); setCurrentUser(user); if (localStorage.getItem('maxi_onboarding_complete') === 'true') { setViewMode('landing'); } else { setViewMode('onboarding'); } }} />;
+  if (viewMode === 'onboarding') return <OnboardingPage username={currentUser?.name || 'Designer'} onComplete={(apiKey) => { const newSettings = { ...settings, customApiKey: apiKey }; setSettings(newSettings); localStorage.setItem('sleek_settings', JSON.stringify(newSettings)); localStorage.setItem('maxi_onboarding_complete', 'true'); setViewMode('landing'); }} />;
   if (viewMode === 'privacy') return <PrivacyPolicy onBack={() => setViewMode('landing')} />;
   if (viewMode === 'terms') return <TermsOfService onBack={() => setViewMode('landing')} />;
 
-  // 5. Main Dashboard (Landing/Projects View)
   if (viewMode === 'landing') {
     return (
       <div className="relative min-h-screen bg-[#FDFBD4]">
@@ -813,38 +751,18 @@ function App() {
         )}
         <NotificationSystem notifications={notifications} onDismiss={removeNotification} />
         
-        {landingTab === 'create' && (
-          <LandingPage 
-             view={landingTab}
-             onStartProject={handleStartProject} 
-             projects={projects}
-             onLoadProject={handleLoadProject}
-             onDeleteProject={handleDeleteProject}
-             onNavigate={(page) => setViewMode(page)}
-          />
-        )}
-        
-        {landingTab === 'projects' && (
-          <LandingPage 
-             view={landingTab}
-             onStartProject={handleStartProject} 
-             projects={projects}
-             onLoadProject={handleLoadProject}
-             onDeleteProject={handleDeleteProject}
-             onNavigate={(page) => setViewMode(page)}
-          />
-        )}
-
-        {landingTab === 'community' && (
-           <CommunityPage onCloneTemplate={handleCloneTemplate} />
-        )}
-
+        {landingTab === 'create' && <LandingPage view={landingTab} onStartProject={handleStartProject} projects={projects} onLoadProject={handleLoadProject} onDeleteProject={handleDeleteProject} onNavigate={(page) => setViewMode(page)} />}
+        {landingTab === 'projects' && <LandingPage view={landingTab} onStartProject={handleStartProject} projects={projects} onLoadProject={handleLoadProject} onDeleteProject={handleDeleteProject} onNavigate={(page) => setViewMode(page)} />}
+        {landingTab === 'community' && <CommunityPage onCloneTemplate={handleCloneTemplate} />}
         {showSettings && <SettingsModal settings={settings} onSave={(s) => setSettings(s)} onClose={() => setShowSettings(false)} />}
       </div>
     );
   }
 
-  // 6. Editor View
+  // Editor
+  const activeProject = projects.find(p => p.id === currentProjectId);
+  const isWebProject = activeProject?.type === 'web';
+
   return (
     <div className="flex h-screen w-full overflow-hidden bg-[#FDFBD4] font-sans">
       <NotificationSystem notifications={notifications} onDismiss={removeNotification} />
@@ -911,7 +829,6 @@ function App() {
           )}
           {activeTab === 'chat' && (
             <div className="flex flex-col min-h-full p-4 gap-6 pb-28">
-              {/* Messages */}
               {messages.map((msg) => (
                 <div key={msg.id} className={`flex gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : ''} animate-in fade-in slide-in-from-bottom-2`}>
                   <div className={`w-8 h-8 rounded-lg border-2 border-black flex items-center justify-center flex-shrink-0 shadow-[2px_2px_0px_0px_black] ${msg.role === 'user' ? 'bg-black text-white' : 'bg-[#FF6B4A] text-white'}`}>
@@ -987,6 +904,7 @@ function App() {
             <span className="flex items-center gap-1 bg-white border-2 border-black px-2 py-0.5 rounded shadow-[2px_2px_0px_0px_black] text-xs">
               {screens.find(s => s.id === activeScreenId)?.name || 'Home'} 
             </span>
+            {isWebProject && <span className="ml-2 bg-blue-100 text-blue-600 px-2 py-0.5 rounded border border-blue-200 text-[10px] font-bold">WEB</span>}
           </div>
           <div className="flex items-center gap-3">
              <button onClick={() => setActiveTab('studio')} className={`flex items-center gap-2 px-4 py-2 border-2 border-black rounded-lg text-xs font-bold uppercase tracking-wider transition-all shadow-[2px_2px_0px_0px_black] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_black] ${activeTab === 'studio' ? 'bg-black text-white' : 'bg-white hover:bg-gray-50 text-black'}`}>
@@ -1018,7 +936,7 @@ function App() {
             style={{ 
               transform: `translate(${panPosition.x}px, ${panPosition.y}px)`,
               transition: isPanning ? 'none' : 'transform 0.1s ease-out',
-              display: 'flex', gap: '60px', alignItems: 'center'
+              display: 'flex', gap: '60px', alignItems: 'flex-start', justifyContent: 'center', paddingTop: '40px'
             }}
           >
             <div className="relative flex flex-col items-center gap-4">
@@ -1033,6 +951,7 @@ function App() {
                   scale={zoom} 
                   loadingPhase={designPhase}
                   enableEditMode={activeTool === 'select'}
+                  type={activeProject?.type || 'mobile'}
                />
             </div>
 
@@ -1042,7 +961,7 @@ function App() {
                     <div className="flex items-center gap-2"><Zap size={16} className="text-[#FF6B4A]" /> {settings.raceModel === 'gemini-2.5-flash' ? 'Gemini 2.5 Flash' : settings.raceModel}</div>
                     <button onClick={() => handleWinRace('challenger')} className="bg-[#FF6B4A] hover:bg-[#FF5530] text-white text-xs px-3 py-1 rounded border border-black font-bold uppercase tracking-wider">Select Winner</button>
                  </div>
-                 <MobileFrame htmlContent={challengerHtmlCode} scale={zoom} loadingPhase={challengerDesignPhase} />
+                 <MobileFrame htmlContent={challengerHtmlCode} scale={zoom} loadingPhase={challengerDesignPhase} type={activeProject?.type || 'mobile'} />
               </div>
             )}
           </div>
