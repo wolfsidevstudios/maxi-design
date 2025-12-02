@@ -14,6 +14,7 @@ import LoginPage from './components/LoginPage';
 import OnboardingPage from './components/OnboardingPage';
 import CodeEditor from './components/CodeEditor';
 import CommunityPage from './components/CommunityPage';
+import SlidesPage from './components/SlidesPage';
 import { 
   createChatSession, 
   streamResponse 
@@ -80,7 +81,7 @@ function App() {
      return 'marketing';
   });
 
-  const [landingTab, setLandingTab] = useState<'create' | 'projects' | 'community'>('create');
+  const [landingTab, setLandingTab] = useState<'create' | 'projects' | 'community' | 'slides'>('create');
   const [activeTab, setActiveTab] = useState<'chat' | 'theme' | 'screens' | 'studio' | 'code'>('chat');
   
   const [showSettings, setShowSettings] = useState(false);
@@ -797,7 +798,9 @@ function App() {
         <NotificationSystem notifications={notifications} onDismiss={removeNotification} />
         
         {landingTab === 'create' && <LandingPage view={landingTab} onStartProject={handleStartProject} projects={projects} onLoadProject={handleLoadProject} onDeleteProject={handleDeleteProject} onNavigate={(page) => setViewMode(page)} />}
-        {landingTab === 'projects' && <LandingPage view={landingTab} onStartProject={handleStartProject} projects={projects} onLoadProject={handleLoadProject} onDeleteProject={handleDeleteProject} onNavigate={(page) => setViewMode(page)} />}
+        {landingTab === 'slides' && <SlidesPage onStartProject={handleStartProject} projects={projects} onLoadProject={handleLoadProject} onDeleteProject={handleDeleteProject} />}
+        {/* Only show mobile/web projects in the "Projects" tab to avoid clutter */}
+        {landingTab === 'projects' && <LandingPage view={landingTab} onStartProject={handleStartProject} projects={projects.filter(p => p.type !== 'presentation')} onLoadProject={handleLoadProject} onDeleteProject={handleDeleteProject} onNavigate={(page) => setViewMode(page)} />}
         {landingTab === 'community' && <CommunityPage onCloneTemplate={handleCloneTemplate} />}
         {showSettings && <SettingsModal settings={settings} onSave={(s) => setSettings(s)} onClose={() => setShowSettings(false)} />}
       </div>

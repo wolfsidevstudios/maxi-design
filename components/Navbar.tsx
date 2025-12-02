@@ -1,10 +1,10 @@
 
 import React from 'react';
-import { Home, Grid, Settings, Users } from './Icons';
+import { Home, Grid, Settings, Users, Presentation } from './Icons';
 
 interface NavbarProps {
-  activeTab: 'create' | 'projects' | 'community';
-  onTabChange: (tab: 'create' | 'projects' | 'community') => void;
+  activeTab: 'create' | 'projects' | 'community' | 'slides';
+  onTabChange: (tab: 'create' | 'projects' | 'community' | 'slides') => void;
   onOpenSettings: () => void;
   onOpenStudio: () => void;
 }
@@ -21,11 +21,19 @@ const Navbar: React.FC<NavbarProps> = ({ activeTab, onTabChange, onOpenSettings,
       </button>
 
       <button 
+        onClick={() => onTabChange('slides')}
+        className={`flex items-center gap-2 px-5 py-2.5 rounded-full border-2 transition-all font-black text-xs uppercase tracking-wider shrink-0 ${activeTab === 'slides' ? 'bg-[#8B5CF6] text-white border-black shadow-[2px_2px_0px_0px_black]' : 'border-transparent text-gray-500 hover:text-black hover:bg-gray-100 hover:border-black'}`}
+      >
+        <Presentation size={16} strokeWidth={3} />
+        <span className="">Slides</span>
+      </button>
+
+      <button 
         onClick={() => onTabChange('projects')}
         className={`flex items-center gap-2 px-5 py-2.5 rounded-full border-2 transition-all font-black text-xs uppercase tracking-wider shrink-0 ${activeTab === 'projects' ? 'bg-[#A3E635] text-black border-black shadow-[2px_2px_0px_0px_black]' : 'border-transparent text-gray-500 hover:text-black hover:bg-gray-100 hover:border-black'}`}
       >
         <Grid size={16} strokeWidth={3} />
-        <span className="">Projects</span>
+        <span className="">Apps</span>
       </button>
 
       <button 
