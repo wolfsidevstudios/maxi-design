@@ -1,10 +1,11 @@
 
 import React, { useState, useEffect } from 'react';
-import { Sparkles, ArrowUp, CheckCircle2, Loader2, ShieldAlert, Zap, Code, Layers, Smartphone, MousePointer2, X, AlertTriangle, Monitor, Globe, ChevronDown, Trophy, MessageSquare } from './Icons';
-import { joinWaitlist } from '../services/db';
+import { Sparkles, ArrowUp, CheckCircle2, Loader2, ShieldAlert, Zap, Code, Layers, Smartphone, MousePointer2, X, AlertTriangle, Monitor, Globe, ChevronDown, Trophy, MessageSquare, Key } from './Icons';
+import { joinWaitlist, validateInviteCode } from '../services/db';
 
 interface WaitlistPageProps {
   onAccessGranted: () => void;
+  onNavigateToLogin: () => void;
 }
 
 const DemoSection = () => {
@@ -114,10 +115,14 @@ const DemoSection = () => {
   );
 }
 
-const WaitlistPage: React.FC<WaitlistPageProps> = ({ onAccessGranted }) => {
+const WaitlistPage: React.FC<WaitlistPageProps> = ({ onAccessGranted, onNavigateToLogin }) => {
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [message, setMessage] = useState('');
+  
+  // Invite Code State
+  const [inviteCode, setInviteCode] = useState('');
+  const [inviteStatus, setInviteStatus] = useState<'idle' | 'checking' | 'valid' | 'invalid'>('idle');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -136,6 +141,23 @@ const WaitlistPage: React.FC<WaitlistPageProps> = ({ onAccessGranted }) => {
     }
   };
 
+  const handleInviteCheck = async (e: React.FormEvent) => {
+     e.preventDefault();
+     if (!inviteCode) return;
+     
+     setInviteStatus('checking');
+     const isValid = await validateInviteCode(inviteCode);
+     
+     if (isValid) {
+        setInviteStatus('valid');
+        setTimeout(() => {
+           onAccessGranted();
+        }, 1000);
+     } else {
+        setInviteStatus('invalid');
+     }
+  };
+
   const WaitlistForm = ({ className = "" }: { className?: string }) => (
     <div className={`w-full max-w-md ${className}`}>
       {status === 'success' ? (
@@ -147,30 +169,59 @@ const WaitlistPage: React.FC<WaitlistPageProps> = ({ onAccessGranted }) => {
            <p className="font-medium text-black/80 text-sm leading-tight">{message}</p>
         </div>
       ) : (
-        <form onSubmit={handleSubmit} className="relative group">
-           <div className="relative flex items-center">
-              <input 
-                 type="email" 
-                 placeholder="Enter your email..."
-                 value={email}
-                 onChange={(e) => setEmail(e.target.value)}
-                 disabled={status === 'loading'}
-                 className="w-full h-14 bg-white border-2 border-black rounded-xl pl-4 pr-16 text-lg font-medium outline-none focus:shadow-[4px_4px_0px_0px_black] transition-all placeholder:text-gray-400 disabled:opacity-70"
-              />
-              <button 
-                 type="submit" 
-                 disabled={status === 'loading' || !email}
-                 className="absolute right-2 top-2 bottom-2 aspect-square bg-[#FF6B4A] hover:bg-[#FF5530] text-white rounded-lg border-2 border-black flex items-center justify-center transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-[2px_2px_0px_0px_black] hover:translate-x-[-1px] hover:translate-y-[-1px] active:shadow-none active:translate-x-[0px] active:translate-y-[0px]"
-              >
-                 {status === 'loading' ? <Loader2 className="animate-spin" size={20} /> : <ArrowUp size={24} strokeWidth={3} className="rotate-45" />}
-              </button>
-           </div>
-           {status === 'error' && (
-              <div className="absolute -bottom-10 left-0 right-0 flex items-center gap-2 text-red-600 font-bold text-xs bg-red-50 p-2 rounded border border-red-200">
-                 <ShieldAlert size={14} /> {message}
+        <div className="space-y-6">
+           <form onSubmit={handleSubmit} className="relative group">
+              <div className="relative flex items-center">
+                 <input 
+                    type="email" 
+                    placeholder="Enter your email..."
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    disabled={status === 'loading'}
+                    className="w-full h-14 bg-white border-2 border-black rounded-xl pl-4 pr-16 text-lg font-medium outline-none focus:shadow-[4px_4px_0px_0px_black] transition-all placeholder:text-gray-400 disabled:opacity-70"
+                 />
+                 <button 
+                    type="submit" 
+                    disabled={status === 'loading' || !email}
+                    className="absolute right-2 top-2 bottom-2 aspect-square bg-[#FF6B4A] hover:bg-[#FF5530] text-white rounded-lg border-2 border-black flex items-center justify-center transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-[2px_2px_0px_0px_black] hover:translate-x-[-1px] hover:translate-y-[-1px] active:shadow-none active:translate-x-[0px] active:translate-y-[0px]"
+                 >
+                    {status === 'loading' ? <Loader2 className="animate-spin" size={20} /> : <ArrowUp size={24} strokeWidth={3} className="rotate-45" />}
+                 </button>
               </div>
-           )}
-        </form>
+              {status === 'error' && (
+                 <div className="absolute -bottom-10 left-0 right-0 flex items-center gap-2 text-red-600 font-bold text-xs bg-red-50 p-2 rounded border border-red-200">
+                    <ShieldAlert size={14} /> {message}
+                 </div>
+              )}
+           </form>
+
+           {/* INVITE CODE INPUT */}
+           <div className="pt-6 border-t border-black/10">
+              <form onSubmit={handleInviteCheck} className="flex flex-col gap-2">
+                 <label className="text-xs font-black uppercase tracking-widest text-gray-400 flex items-center gap-1">
+                    <Key size={12} /> Have an invite code?
+                 </label>
+                 <div className="flex gap-2">
+                    <input 
+                       type="text" 
+                       placeholder="CODE-1234"
+                       value={inviteCode}
+                       onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
+                       className="flex-1 h-10 bg-white border-2 border-black rounded-lg pl-3 text-sm font-bold outline-none uppercase placeholder:font-medium placeholder:normal-case focus:shadow-[2px_2px_0px_0px_black] transition-all"
+                    />
+                    <button 
+                       type="submit"
+                       disabled={inviteStatus === 'checking' || !inviteCode}
+                       className="bg-black text-white px-4 rounded-lg font-bold text-xs uppercase tracking-wider border-2 border-transparent hover:bg-gray-800 transition-all disabled:opacity-50"
+                    >
+                       {inviteStatus === 'checking' ? <Loader2 className="animate-spin" size={14} /> : 'Use'}
+                    </button>
+                 </div>
+                 {inviteStatus === 'valid' && <div className="text-xs font-bold text-green-600 flex items-center gap-1"><CheckCircle2 size={12} /> Code accepted! Entering...</div>}
+                 {inviteStatus === 'invalid' && <div className="text-xs font-bold text-red-500 flex items-center gap-1"><X size={12} /> Invalid code</div>}
+              </form>
+           </div>
+        </div>
       )}
     </div>
   );
@@ -184,9 +235,14 @@ const WaitlistPage: React.FC<WaitlistPageProps> = ({ onAccessGranted }) => {
             <div className="w-8 h-8 bg-[#FF6B4A] border-2 border-black rounded-lg flex items-center justify-center text-white font-black">M</div>
             <span className="font-bold text-xl tracking-tight">Maxi Design</span>
          </div>
-         <a href="#join" className="hidden md:block px-4 py-2 bg-black text-white text-xs font-bold uppercase tracking-widest rounded-lg hover:bg-gray-800 transition-colors">
-            Get Early Access
-         </a>
+         <div className="flex items-center gap-4">
+             <button onClick={onNavigateToLogin} className="text-sm font-bold hover:underline">
+                Login
+             </button>
+             <a href="#join" className="hidden md:block px-4 py-2 bg-black text-white text-xs font-bold uppercase tracking-widest rounded-lg hover:bg-gray-800 transition-colors">
+                Get Early Access
+             </a>
+         </div>
       </nav>
 
       {/* HERO SECTION */}

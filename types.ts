@@ -20,7 +20,7 @@ export interface ThemeSettings {
   primaryColor: string;
 }
 
-export type ModelType = 'gemini-3-pro-preview' | 'gemini-2.5-flash' | 'gemini-flash-lite-latest';
+export type ModelType = 'gemini-3-pro-preview' | 'gemini-2.5-pro' | 'gemini-2.5-flash' | 'gemini-2.5-flash-lite';
 
 export interface AppSettings {
   activeModel: ModelType;
@@ -48,10 +48,16 @@ export interface ProjectData {
   settings?: AppSettings;
 }
 
-export type ViewMode = 'landing' | 'editor' | 'privacy' | 'terms';
+export type ViewMode = 'landing' | 'editor' | 'privacy' | 'terms' | 'login';
 
 export interface GeneratedCodeState {
   code: string;
   isLoading: boolean;
   version: number;
+}
+
+export interface User {
+  name: string;
+  email: string;
+  picture: string;
 }

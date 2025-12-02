@@ -49,6 +49,28 @@ export const joinWaitlist = async (email: string): Promise<{ success: boolean; m
   }
 };
 
+export const validateInviteCode = async (code: string): Promise<boolean> => {
+  if (!code) return false;
+  
+  try {
+    const { data, error } = await supabase
+      .from('invite_codes')
+      .select('code, is_active')
+      .eq('code', code)
+      .eq('is_active', true)
+      .single();
+
+    if (error || !data) {
+      return false;
+    }
+    
+    return true;
+  } catch (e) {
+    console.error("Error checking invite code", e);
+    return false;
+  }
+};
+
 export const hasJoinedWaitlist = (): boolean => {
    // STRICT CHECK: Only return true if the 'access_granted' token is present.
    // Signing up for the waitlist is no longer enough to enter the app.

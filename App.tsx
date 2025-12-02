@@ -10,6 +10,7 @@ import PrivacyPolicy from './components/PrivacyPolicy';
 import TermsOfService from './components/TermsOfService';
 import NotificationSystem, { NotificationItem } from './components/Notification';
 import WaitlistPage from './components/WaitlistPage';
+import LoginPage from './components/LoginPage';
 import { hasJoinedWaitlist } from './services/db';
 import { 
   createChatSession, 
@@ -53,20 +54,25 @@ import {
   MousePointerClick,
   BoxSelect
 } from './components/Icons';
-import { Message, ThemeSettings, ViewMode, ProjectData, AppSettings, Screen, ModelType } from './types';
+import { Message, ThemeSettings, ViewMode, ProjectData, AppSettings, Screen, ModelType, User } from './types';
 import { Chat } from '@google/genai';
 import JSZip from 'jszip';
 
-// Extend ViewMode to include waitlist
-type ExtendedViewMode = ViewMode | 'waitlist';
+// Extend ViewMode to include waitlist and login
+type ExtendedViewMode = ViewMode | 'waitlist' | 'login';
 
 function App() {
   const [viewMode, setViewMode] = useState<ExtendedViewMode>(() => {
-     // Check if user has already joined waitlist
+     // Check if user has already joined waitlist OR logged in
      if (hasJoinedWaitlist()) {
         return 'landing';
      }
      return 'waitlist';
+  });
+  
+  const [currentUser, setCurrentUser] = useState<User | null>(() => {
+     const savedUser = localStorage.getItem('maxi_user');
+     return savedUser ? JSON.parse(savedUser) : null;
   });
 
   const [landingTab, setLandingTab] = useState<'create' | 'projects'>('create');
@@ -79,7 +85,7 @@ function App() {
       const saved = localStorage.getItem('sleek_settings');
       if (saved) {
          const parsed = JSON.parse(saved);
-         const validModels: ModelType[] = ['gemini-3-pro-preview', 'gemini-2.5-flash', 'gemini-flash-lite-latest'];
+         const validModels: ModelType[] = ['gemini-3-pro-preview', 'gemini-2.5-pro', 'gemini-2.5-flash', 'gemini-2.5-flash-lite'];
          const activeModel = validModels.includes(parsed.activeModel) ? parsed.activeModel : 'gemini-3-pro-preview';
          const raceModel = validModels.includes(parsed.raceModel) ? parsed.raceModel : 'gemini-2.5-flash';
 
@@ -683,10 +689,25 @@ function App() {
   // --- VIEW RENDERING ---
 
   if (viewMode === 'waitlist') {
-    return <WaitlistPage onAccessGranted={() => {
-       localStorage.setItem('maxi_access_granted', 'true');
-       setViewMode('landing');
-    }} />;
+    return <WaitlistPage 
+       onAccessGranted={() => {
+          localStorage.setItem('maxi_access_granted', 'true');
+          setViewMode('landing');
+       }} 
+       onNavigateToLogin={() => setViewMode('login')}
+    />;
+  }
+  
+  if (viewMode === 'login') {
+     return <LoginPage 
+        onBack={() => setViewMode('waitlist')}
+        onLoginSuccess={(user) => {
+           localStorage.setItem('maxi_access_granted', 'true');
+           localStorage.setItem('maxi_user', JSON.stringify(user));
+           setCurrentUser(user);
+           setViewMode('landing');
+        }}
+     />
   }
 
   if (viewMode === 'privacy') return <PrivacyPolicy onBack={() => setViewMode('landing')} />;
@@ -701,6 +722,12 @@ function App() {
           onOpenSettings={() => setShowSettings(true)} 
           onOpenStudio={() => handleStartProject('', undefined, 'studio')}
         />
+        {currentUser && (
+           <div className="fixed top-8 right-20 z-50 flex items-center gap-2 animate-in fade-in">
+              <span className="text-xs font-bold text-gray-500 hidden md:block">Hi, {currentUser.name}</span>
+              <img src={currentUser.picture} className="w-8 h-8 rounded-full border-2 border-black" alt="Profile" />
+           </div>
+        )}
         <NotificationSystem notifications={notifications} onDismiss={removeNotification} />
         <LandingPage 
           view={landingTab}

@@ -15,8 +15,9 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ settings, onSave, onClose
 
   const models: {id: ModelType; name: string; desc: string}[] = [
     { id: 'gemini-3-pro-preview', name: 'Gemini 3.0 Pro', desc: 'Best for complex reasoning & coding' },
+    { id: 'gemini-2.5-pro', name: 'Gemini 2.5 Pro', desc: 'Balanced performance & reasoning' },
     { id: 'gemini-2.5-flash', name: 'Gemini 2.5 Flash', desc: 'Fast, low-latency & high-frequency' },
-    { id: 'gemini-flash-lite-latest', name: 'Gemini 2.5 Flash Lite', desc: 'Cost-effective & lightweight' },
+    { id: 'gemini-2.5-flash-lite', name: 'Gemini 2.5 Flash Lite', desc: 'Cost-effective & lightweight' },
   ];
 
   const handleSave = () => {
