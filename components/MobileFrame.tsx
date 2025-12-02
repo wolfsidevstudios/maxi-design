@@ -7,7 +7,7 @@ interface MobileFrameProps {
   loadingPhase?: 'idle' | 'theming' | 'coding';
   enableEditMode?: boolean;
   onHtmlUpdate?: (newHtml: string) => void;
-  type?: 'mobile' | 'web' | 'presentation';
+  type?: 'mobile' | 'web';
 }
 
 const MobileFrame: React.FC<MobileFrameProps> = ({ htmlContent, scale = 1, loadingPhase = 'idle', enableEditMode = false, onHtmlUpdate, type = 'mobile' }) => {
@@ -172,10 +172,6 @@ const MobileFrame: React.FC<MobileFrameProps> = ({ htmlContent, scale = 1, loadi
      width = '1280px';
      height = '832px';
      borderRadius = '12px';
-  } else if (type === 'presentation') {
-     width = '1280px'; // 16:9 Aspect Ratio Base
-     height = '720px';
-     borderRadius = '0px'; // Presentations usually square
   }
 
   return (
@@ -205,13 +201,6 @@ const MobileFrame: React.FC<MobileFrameProps> = ({ htmlContent, scale = 1, loadi
               <div className="flex-1 mx-4 bg-white border border-gray-300 h-5 rounded flex items-center px-2">
                  <span className="text-[10px] text-gray-400 font-mono">localhost:3000</span>
               </div>
-           </div>
-        )}
-
-        {/* Presentation Controls Overlay (Visual Only) */}
-        {type === 'presentation' && (
-           <div className="absolute bottom-4 right-4 z-20 flex gap-2 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity">
-              <div className="bg-black/80 text-white px-3 py-1 rounded-full text-xs font-bold backdrop-blur-sm">Slide 1/5</div>
            </div>
         )}
 

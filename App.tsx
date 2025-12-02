@@ -14,7 +14,6 @@ import LoginPage from './components/LoginPage';
 import OnboardingPage from './components/OnboardingPage';
 import CodeEditor from './components/CodeEditor';
 import CommunityPage from './components/CommunityPage';
-import SlidesPage from './components/SlidesPage';
 import WebBuilderPage from './components/WebBuilderPage';
 import { 
   createChatSession, 
@@ -58,7 +57,6 @@ import {
   MousePointerClick,
   BoxSelect,
   FileCode,
-  Presentation,
   Eye
 } from './components/Icons';
 import { Message, ThemeSettings, ViewMode, ProjectData, AppSettings, Screen, ModelType, User, Template } from './types';
@@ -83,7 +81,7 @@ function App() {
      return 'marketing';
   });
 
-  const [landingTab, setLandingTab] = useState<'create' | 'projects' | 'community' | 'slides' | 'web-apps'>('create');
+  const [landingTab, setLandingTab] = useState<'create' | 'projects' | 'community' | 'web-apps'>('create');
   const [activeTab, setActiveTab] = useState<'chat' | 'theme' | 'screens' | 'studio' | 'code'>('chat');
   
   // Specific state for Web Mode Toggle
@@ -310,7 +308,7 @@ function App() {
      });
   };
 
-  const handleStartProject = (initialPrompt: string, referenceImage?: string, initialTab: 'chat' | 'studio' = 'chat', type: 'mobile' | 'web' | 'presentation' = 'mobile') => {
+  const handleStartProject = (initialPrompt: string, referenceImage?: string, initialTab: 'chat' | 'studio' = 'chat', type: 'mobile' | 'web' = 'mobile') => {
     const newId = Date.now().toString();
     const initialScreen: Screen = {
       id: 'screen-1',
@@ -322,7 +320,7 @@ function App() {
 
     const newProject: ProjectData = {
       id: newId,
-      name: initialPrompt || (type === 'presentation' ? 'Untitled Presentation' : 'Untitled Project'),
+      name: initialPrompt || (type === 'web' ? 'Untitled Web App' : 'Untitled Project'),
       lastEdited: Date.now(),
       messages: initialMessages,
       screens: [initialScreen],
@@ -444,7 +442,7 @@ function App() {
     if (project.settings) setSettings(project.settings);
     
     setPanPosition({ x: 0, y: 0 });
-    setZoom((project.type === 'web' || project.type === 'presentation') ? 0.45 : 0.7);
+    setZoom((project.type === 'web') ? 0.45 : 0.7);
     setIsRaceMode(false); 
     setSelectedElementStyles(null);
     setActiveTool('select');
@@ -776,7 +774,6 @@ function App() {
   };
 
   const isWebProject = activeProject?.type === 'web';
-  const isPresentation = activeProject?.type === 'presentation';
 
   // --- RENDER ---
   if (viewMode === 'marketing') return <MarketingPage onNavigateToLogin={() => setViewMode('login')} />;
@@ -803,10 +800,9 @@ function App() {
         <NotificationSystem notifications={notifications} onDismiss={removeNotification} />
         
         {landingTab === 'create' && <LandingPage view={landingTab} onStartProject={handleStartProject} projects={projects} onLoadProject={handleLoadProject} onDeleteProject={handleDeleteProject} onNavigate={(page) => setViewMode(page)} />}
-        {landingTab === 'slides' && <SlidesPage onStartProject={handleStartProject} projects={projects} onLoadProject={handleLoadProject} onDeleteProject={handleDeleteProject} />}
         {landingTab === 'web-apps' && <WebBuilderPage onStartProject={handleStartProject} projects={projects} onLoadProject={handleLoadProject} onDeleteProject={handleDeleteProject} />}
         {/* Only show mobile/web projects in the "Projects" tab to avoid clutter */}
-        {landingTab === 'projects' && <LandingPage view={landingTab} onStartProject={handleStartProject} projects={projects.filter(p => p.type !== 'presentation')} onLoadProject={handleLoadProject} onDeleteProject={handleDeleteProject} onNavigate={(page) => setViewMode(page)} />}
+        {landingTab === 'projects' && <LandingPage view={landingTab} onStartProject={handleStartProject} projects={projects} onLoadProject={handleLoadProject} onDeleteProject={handleDeleteProject} onNavigate={(page) => setViewMode(page)} />}
         {landingTab === 'community' && <CommunityPage onCloneTemplate={handleCloneTemplate} />}
         {showSettings && <SettingsModal settings={settings} onSave={(s) => setSettings(s)} onClose={() => setShowSettings(false)} />}
       </div>
@@ -962,7 +958,6 @@ function App() {
               {screens.find(s => s.id === activeScreenId)?.name || 'Home'} 
             </span>
             {isWebProject && <span className="ml-2 bg-blue-100 text-blue-600 px-2 py-0.5 rounded border border-blue-200 text-[10px] font-bold">WEB</span>}
-            {isPresentation && <span className="ml-2 bg-purple-100 text-purple-600 px-2 py-0.5 rounded border border-purple-200 text-[10px] font-bold">SLIDES</span>}
           </div>
           <div className="flex items-center gap-3">
              {/* WEB PROJECT: TOGGLE PREVIEW / CODE */}

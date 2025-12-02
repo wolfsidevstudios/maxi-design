@@ -1,11 +1,11 @@
 
 import React, { useState, useRef } from 'react';
-import { Sparkles, ImageIcon, ArrowUp, Smartphone, Trash2, Zap, Palette, Code, ChevronDown, Layers, Cpu, Globe, X, Monitor, BoxSelect, Presentation } from './Icons';
+import { Sparkles, ImageIcon, ArrowUp, Smartphone, Trash2, Zap, Palette, Code, ChevronDown, Layers, Cpu, Globe, X, Monitor, BoxSelect } from './Icons';
 import { ProjectData } from '../types';
 
 interface LandingPageProps {
   view: 'create' | 'projects';
-  onStartProject: (initialPrompt: string, referenceImage?: string, initialTab?: 'chat' | 'studio', type?: 'mobile' | 'web' | 'presentation') => void;
+  onStartProject: (initialPrompt: string, referenceImage?: string, initialTab?: 'chat' | 'studio', type?: 'mobile' | 'web') => void;
   projects: ProjectData[];
   onLoadProject: (project: ProjectData) => void;
   onDeleteProject: (projectId: string) => void;
@@ -246,16 +246,22 @@ const LandingPage: React.FC<LandingPageProps> = ({ view, onStartProject, project
                          </div>
                        </div>
                    </div>
+                   
+                   {/* Card 5 - Web UI */}
+                   <div className="bg-white border-2 border-black p-8 rounded-2xl shadow-[8px_8px_0px_0px_black] border-dashed border-gray-400 opacity-60 flex flex-col items-center justify-center text-center cursor-not-allowed md:col-span-3">
+                      <div className="mb-4 text-xs font-bold bg-gray-200 px-2 py-1 rounded text-gray-500 uppercase tracking-widest">Coming Soon</div>
+                      <h3 className="text-2xl font-black text-gray-400 uppercase tracking-tight">Web UI Generation</h3>
+                      <p className="font-medium text-gray-400">Generate responsive landing pages and dashboards.</p>
+                   </div>
                 </div>
              </div>
           </div>
         </div>
       )}
 
-      {/* VIEW: PROJECTS (Unchanged logic, just ensure existing props pass through) */}
+      {/* VIEW: PROJECTS */}
       {view === 'projects' && (
         <div className="w-full max-w-6xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20 pt-32 px-6">
-          {/* ... Existing project view code ... */}
           <div className="flex items-center justify-between mb-8">
             <h2 className="text-4xl font-black text-black uppercase tracking-tight flex items-center gap-3">
               <span className="w-6 h-6 bg-[#A3E635] border-2 border-black shadow-[2px_2px_0px_0px_black]"></span>
@@ -289,8 +295,8 @@ const LandingPage: React.FC<LandingPageProps> = ({ view, onStartProject, project
                     onClick={() => onLoadProject(project)}
                   >
                     <div className="flex justify-between items-start mb-4">
-                      <div className={`w-12 h-12 border-2 border-black rounded-lg flex items-center justify-center text-black shadow-[2px_2px_0px_0px_black] ${project.type === 'presentation' ? 'bg-[#60A5FA]' : 'bg-[#A3E635]'}`}>
-                        {project.type === 'presentation' ? <Presentation size={24} strokeWidth={2.5} /> : <Smartphone size={24} strokeWidth={2.5} />}
+                      <div className={`w-12 h-12 border-2 border-black rounded-lg flex items-center justify-center text-black shadow-[2px_2px_0px_0px_black] ${project.type === 'web' ? 'bg-[#3B82F6] text-white' : 'bg-[#A3E635]'}`}>
+                        {project.type === 'web' ? <Monitor size={24} strokeWidth={2.5} /> : <Smartphone size={24} strokeWidth={2.5} />}
                       </div>
                       <div className="text-[10px] font-bold bg-black text-white px-2 py-1 rounded border border-black">
                         {project.screens ? project.screens.length : 1} Screens

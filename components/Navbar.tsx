@@ -1,10 +1,10 @@
 
 import React from 'react';
-import { Home, Grid, Settings, Users, Presentation, Monitor } from './Icons';
+import { Home, Grid, Settings, Users, Monitor } from './Icons';
 
 interface NavbarProps {
-  activeTab: 'create' | 'projects' | 'community' | 'slides' | 'web-apps';
-  onTabChange: (tab: 'create' | 'projects' | 'community' | 'slides' | 'web-apps') => void;
+  activeTab: 'create' | 'projects' | 'community' | 'web-apps';
+  onTabChange: (tab: 'create' | 'projects' | 'community' | 'web-apps') => void;
   onOpenSettings: () => void;
   onOpenStudio: () => void;
 }
@@ -26,14 +26,6 @@ const Navbar: React.FC<NavbarProps> = ({ activeTab, onTabChange, onOpenSettings,
       >
         <Monitor size={16} strokeWidth={3} />
         <span className="">Web Apps</span>
-      </button>
-
-      <button 
-        onClick={() => onTabChange('slides')}
-        className={`flex items-center gap-2 px-5 py-2.5 rounded-full border-2 transition-all font-black text-xs uppercase tracking-wider shrink-0 ${activeTab === 'slides' ? 'bg-[#8B5CF6] text-white border-black shadow-[2px_2px_0px_0px_black]' : 'border-transparent text-gray-500 hover:text-black hover:bg-gray-100 hover:border-black'}`}
-      >
-        <Presentation size={16} strokeWidth={3} />
-        <span className="">Slides</span>
       </button>
 
       <button 
