@@ -71,6 +71,33 @@ export const validateInviteCode = async (code: string): Promise<boolean> => {
   }
 };
 
+export const createInviteCode = async (createdBy: string = 'user'): Promise<string | null> => {
+  try {
+    const randomSuffix = Math.random().toString(36).substring(2, 6).toUpperCase();
+    const code = `MAXI-${randomSuffix}`;
+    
+    const { error } = await supabase
+      .from('invite_codes')
+      .insert([
+        { 
+          code, 
+          is_active: true,
+          created_by: createdBy
+        }
+      ]);
+
+    if (error) {
+       console.error("Error creating invite code", error);
+       return null;
+    }
+
+    return code;
+  } catch (e) {
+    console.error("Exception creating invite code", e);
+    return null;
+  }
+};
+
 export const hasJoinedWaitlist = (): boolean => {
    // STRICT CHECK: Only return true if the 'access_granted' token is present.
    // Signing up for the waitlist is no longer enough to enter the app.

@@ -62,7 +62,8 @@ import {
   BoxSelect,
   Eye,
   Lock,
-  Copy
+  Copy,
+  FileCode
 } from 'lucide-react';
 
 export {
@@ -127,5 +128,6 @@ export {
   BoxSelect,
   Eye,
   Lock,
-  Copy
+  Copy,
+  FileCode
 };

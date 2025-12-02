@@ -1,7 +1,8 @@
 
 import React, { useState } from 'react';
-import { X, Zap, BrainCircuit, Trophy, CheckCircle2, Key, Settings as SettingsIcon } from './Icons';
+import { X, Zap, BrainCircuit, Trophy, CheckCircle2, Key, Settings as SettingsIcon, Share, Loader2, Copy } from './Icons';
 import { AppSettings, ModelType } from '../types';
+import { createInviteCode } from '../services/db';
 
 interface SettingsModalProps {
   settings: AppSettings;
@@ -12,6 +13,9 @@ interface SettingsModalProps {
 const SettingsModal: React.FC<SettingsModalProps> = ({ settings, onSave, onClose }) => {
   const [localSettings, setLocalSettings] = useState(settings);
   const [apiKeyVisible, setApiKeyVisible] = useState(false);
+  const [generatedCode, setGeneratedCode] = useState<string | null>(null);
+  const [isGeneratingCode, setIsGeneratingCode] = useState(false);
+  const [copiedCode, setCopiedCode] = useState(false);
 
   const models: {id: ModelType; name: string; desc: string}[] = [
     { id: 'gemini-3-pro-preview', name: 'Gemini 3.0 Pro', desc: 'Best for complex reasoning & coding' },
@@ -23,6 +27,23 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ settings, onSave, onClose
   const handleSave = () => {
     onSave(localSettings);
     onClose();
+  };
+
+  const handleGenerateCode = async () => {
+     setIsGeneratingCode(true);
+     const code = await createInviteCode();
+     if (code) {
+        setGeneratedCode(code);
+     }
+     setIsGeneratingCode(false);
+  };
+
+  const handleCopyCode = () => {
+     if (generatedCode) {
+        navigator.clipboard.writeText(generatedCode);
+        setCopiedCode(true);
+        setTimeout(() => setCopiedCode(false), 2000);
+     }
   };
 
   const ToggleSwitch = ({ checked, onChange }: { checked: boolean; onChange: (v: boolean) => void }) => (
@@ -141,6 +162,44 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ settings, onSave, onClose
                 </div>
               </div>
             </div>
+          </div>
+
+          {/* Invite Code Section */}
+          <div className="space-y-4 pt-8 border-t-2 border-black border-dashed">
+             <label className="text-base font-black text-black uppercase tracking-widest flex items-center gap-2">
+               <Share size={20} /> Invite Friends
+             </label>
+             <div className="bg-[#E0F2FE] p-6 rounded-2xl border-2 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] flex flex-col md:flex-row items-center justify-between gap-6">
+                <div className="flex-1">
+                   <h3 className="font-bold text-black text-lg mb-1">Give Access</h3>
+                   <p className="text-sm font-medium text-gray-600">Generate a unique invite code to let a friend skip the waitlist.</p>
+                </div>
+                <div className="flex flex-col items-end gap-3 w-full md:w-auto">
+                   {generatedCode ? (
+                      <div className="flex items-center gap-2 w-full md:w-auto">
+                         <div className="bg-white border-2 border-black px-4 py-2 rounded-lg font-mono font-bold text-lg tracking-widest shadow-sm">
+                            {generatedCode}
+                         </div>
+                         <button 
+                           onClick={handleCopyCode}
+                           className="p-2.5 bg-black text-white rounded-lg border-2 border-transparent hover:bg-gray-800 transition-colors"
+                           title="Copy"
+                         >
+                            {copiedCode ? <CheckCircle2 size={20} className="text-green-400" /> : <Copy size={20} />}
+                         </button>
+                      </div>
+                   ) : (
+                      <button 
+                        onClick={handleGenerateCode}
+                        disabled={isGeneratingCode}
+                        className="px-6 py-2.5 bg-black text-white font-bold uppercase tracking-wide rounded-lg border-2 border-transparent hover:bg-gray-800 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] active:translate-y-[1px] active:shadow-none transition-all w-full md:w-auto flex items-center justify-center gap-2"
+                      >
+                         {isGeneratingCode ? <Loader2 className="animate-spin" size={16} /> : <Zap size={16} fill="white" />}
+                         Generate Code
+                      </button>
+                   )}
+                </div>
+             </div>
           </div>
 
           {/* API Key Section */}

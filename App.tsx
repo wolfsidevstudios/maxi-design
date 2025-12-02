@@ -11,6 +11,7 @@ import TermsOfService from './components/TermsOfService';
 import NotificationSystem, { NotificationItem } from './components/Notification';
 import WaitlistPage from './components/WaitlistPage';
 import LoginPage from './components/LoginPage';
+import CodeEditor from './components/CodeEditor';
 import { hasJoinedWaitlist } from './services/db';
 import { 
   createChatSession, 
@@ -52,7 +53,8 @@ import {
   Paperclip,
   X,
   MousePointerClick,
-  BoxSelect
+  BoxSelect,
+  FileCode
 } from './components/Icons';
 import { Message, ThemeSettings, ViewMode, ProjectData, AppSettings, Screen, ModelType, User } from './types';
 import { Chat } from '@google/genai';
@@ -76,7 +78,7 @@ function App() {
   });
 
   const [landingTab, setLandingTab] = useState<'create' | 'projects'>('create');
-  const [activeTab, setActiveTab] = useState<'chat' | 'theme' | 'screens' | 'studio'>('chat');
+  const [activeTab, setActiveTab] = useState<'chat' | 'theme' | 'screens' | 'studio' | 'code'>('chat');
   
   // Settings & Modal
   const [showSettings, setShowSettings] = useState(false);
@@ -247,7 +249,7 @@ function App() {
     const handleMessage = (event: MessageEvent) => {
       if (event.data.type === 'ELEMENT_SELECTED') {
         setSelectedElementStyles(event.data.payload);
-        if (activeTab !== 'studio' && activeTool === 'select') {
+        if (activeTab !== 'studio' && activeTab !== 'code' && activeTool === 'select') {
            setActiveTab('studio');
         }
       }
@@ -486,7 +488,7 @@ function App() {
     setAttachedImage(null); 
     setIsGenerating(true);
     setStatusSteps({ analyzed: false, planned: false, generating: false });
-    if(activeTab === 'studio') setActiveTab('chat'); 
+    if(activeTab === 'studio' || activeTab === 'code') setActiveTab('chat'); 
 
     const processStream = async (
       session: Chat, 
@@ -768,6 +770,7 @@ function App() {
           <div className="flex items-center gap-1 px-2">
             <button onClick={() => setActiveTab('chat')} className={`px-2 py-2 text-xs font-bold uppercase tracking-wider rounded-lg transition-all flex items-center gap-1 border-2 ${activeTab === 'chat' ? 'bg-[#FF6B4A] text-white border-black shadow-[2px_2px_0px_0px_black]' : 'bg-white text-gray-500 border-gray-200 hover:border-black hover:text-black'}`}><MessageSquare size={14} /> Chat</button>
             <button onClick={() => setActiveTab('studio')} className={`px-2 py-2 text-xs font-bold uppercase tracking-wider rounded-lg transition-all flex items-center gap-1 border-2 ${activeTab === 'studio' ? 'bg-[#A3E635] text-black border-black shadow-[2px_2px_0px_0px_black]' : 'bg-white text-gray-500 border-gray-200 hover:border-black hover:text-black'}`}><BoxSelect size={14} /> Studio</button>
+            <button onClick={() => setActiveTab('code')} className={`px-2 py-2 text-xs font-bold uppercase tracking-wider rounded-lg transition-all flex items-center gap-1 border-2 ${activeTab === 'code' ? 'bg-[#333] text-white border-black shadow-[2px_2px_0px_0px_black]' : 'bg-white text-gray-500 border-gray-200 hover:border-black hover:text-black'}`}><FileCode size={14} /></button>
             <button onClick={() => setActiveTab('theme')} className={`px-2 py-2 text-xs font-bold uppercase tracking-wider rounded-lg transition-all flex items-center gap-1 border-2 ${activeTab === 'theme' ? 'bg-gray-100 text-black border-black' : 'bg-white text-gray-500 border-gray-200 hover:border-black hover:text-black'}`}><Palette size={14} /></button>
             <button onClick={() => setActiveTab('screens')} className={`px-2 py-2 text-xs font-bold uppercase tracking-wider rounded-lg transition-all flex items-center gap-1 border-2 ${activeTab === 'screens' ? 'bg-gray-100 text-black border-black' : 'bg-white text-gray-500 border-gray-200 hover:border-black hover:text-black'}`}><StickyNote size={14} /></button>
           </div>
@@ -798,6 +801,12 @@ function App() {
                selectedElement={selectedElementStyles} 
                onUpdateStyle={handleStudioUpdate}
                onInsertElement={handleInsertElement}
+             />
+          )}
+          {activeTab === 'code' && (
+             <CodeEditor 
+               code={getActiveScreenHtml()} 
+               onChange={updateActiveScreenHtml}
              />
           )}
           {activeTab === 'chat' && (
