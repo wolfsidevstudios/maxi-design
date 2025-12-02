@@ -49,14 +49,17 @@ RULES:
    - Tailwind CSS (via CDN) for styling.
    - Vanilla JavaScript (inside <script> tags) for logic and interactivity.
 
-3. INTERACTIVITY & LOGIC:
-   - The app MUST be functional. Buttons should work, forms should handle submit events, toggles should toggle.
-   - Use DOM manipulation to create a dynamic experience (e.g., adding items to a list, filtering data, showing modals).
-   - Mock data where necessary, but ensure the logic to handle that data is real.
+3. APP ARCHITECTURE & LOGIC:
+   - Build a COMPLETE application, not just a UI mockup.
+   - Implement client-side state management (e.g., using a state object and render functions).
+   - Ensure all interactive elements function (Forms must submit, Modals must open/close, Filters must filter data).
+   - If a backend is implied (like a Login or Database), simulate it using localStorage or mock async functions with delays.
+   - The app should feel "live" and usable.
 
 4. DESIGN:
    - Target a Desktop resolution (1280px+).
-   - Use modern UI patterns (Sidebars, Dashboards, Grid Layouts).
+   - Use modern, premium UI patterns (Sidebars with active states, Data Tables with actions, Kanban boards, etc.).
+   - Ensure responsive layout but prioritize Desktop excellence.
    - Make it look premium and polished.
 
 5. IMAGES: Use 'https://picsum.photos/id/{id}/800/600' for placeholders.

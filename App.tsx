@@ -816,7 +816,7 @@ function App() {
       {showSettings && <SettingsModal settings={settings} onSave={(s) => setSettings(s)} onClose={() => setShowSettings(false)} />}
 
       {/* LEFT SIDEBAR */}
-      <div className={`${isWebProject ? 'w-[450px]' : 'w-[380px]'} flex flex-col border-r-2 border-black bg-white z-20 transition-all relative shadow-[4px_0px_0px_0px_rgba(0,0,0,0.05)]`}>
+      <div className={`${isWebProject ? 'w-[550px]' : 'w-[380px]'} flex flex-col border-r-2 border-black bg-white z-20 transition-all relative shadow-[4px_0px_0px_0px_rgba(0,0,0,0.05)]`}>
         <div className="h-16 border-b-2 border-black flex items-center justify-between px-4 bg-white shrink-0">
           <div className="flex items-center gap-3">
             <button onClick={() => setViewMode('landing')} className="p-2 hover:bg-gray-100 rounded-lg text-black transition-colors border-2 border-transparent hover:border-black hover:shadow-[2px_2px_0px_0px_black]"><Home size={18} strokeWidth={2.5} /></button>
