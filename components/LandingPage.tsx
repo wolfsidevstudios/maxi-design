@@ -1,6 +1,6 @@
 
 import React, { useState, useRef } from 'react';
-import { Sparkles, ImageIcon, ArrowUp, Smartphone, Trash2, Zap, Palette, Code, ChevronDown, Layers, Cpu, Globe, X } from './Icons';
+import { Sparkles, ImageIcon, ArrowUp, Smartphone, Trash2, Zap, Palette, Code, ChevronDown, Layers, Cpu, Globe, X, Monitor } from './Icons';
 import { ProjectData } from '../types';
 
 interface LandingPageProps {
@@ -225,7 +225,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ view, onStartProject, project
                       </p>
                    </div>
                    
-                   {/* Card 4 */}
+                   {/* Card 4 - Race Mode */}
                    <div className="bg-[#FFEDD5] border-2 border-black p-8 rounded-2xl shadow-[8px_8px_0px_0px_black] hover:shadow-[4px_4px_0px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px] transition-all group md:col-span-2">
                        <div className="flex flex-col md:flex-row gap-6 items-start">
                          <div>
@@ -246,7 +246,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ view, onStartProject, project
                        </div>
                    </div>
 
-                   {/* Card 5 */}
+                   {/* Card 5 - Iterations */}
                    <div className="bg-[#DCFCE7] border-2 border-black p-8 rounded-2xl shadow-[8px_8px_0px_0px_black] hover:shadow-[4px_4px_0px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px] transition-all group">
                       <div className="w-14 h-14 bg-[#4ADE80] border-2 border-black rounded-xl flex items-center justify-center mb-6 shadow-[4px_4px_0px_0px_black] group-hover:rotate-180 transition-transform duration-500">
                          <Layers size={28} className="text-white" strokeWidth={2.5} />
@@ -254,6 +254,18 @@ const LandingPage: React.FC<LandingPageProps> = ({ view, onStartProject, project
                       <h3 className="text-2xl font-black mb-3 uppercase tracking-tight">Iterations</h3>
                       <p className="font-medium text-gray-700 leading-relaxed">
                         Refine your design with natural language. "Make the button bigger", "Dark mode", "Add a footer".
+                      </p>
+                   </div>
+
+                   {/* New Card 6 - Web UI Coming Soon */}
+                   <div className="bg-gray-50 border-2 border-black border-dashed p-8 rounded-2xl flex flex-col items-center justify-center text-center opacity-80 hover:opacity-100 transition-opacity">
+                      <div className="w-14 h-14 bg-gray-200 border-2 border-black rounded-xl flex items-center justify-center mb-4">
+                         <Monitor size={28} className="text-gray-500" strokeWidth={2.5} />
+                      </div>
+                      <h3 className="text-xl font-black mb-2 uppercase tracking-tight">Web UI Generation</h3>
+                      <div className="bg-black text-white text-[10px] font-bold px-2 py-1 rounded mb-2 uppercase tracking-widest">Coming Soon</div>
+                      <p className="text-sm font-medium text-gray-500">
+                        We are working on full web application generation. Stay tuned for desktop layouts.
                       </p>
                    </div>
                 </div>
