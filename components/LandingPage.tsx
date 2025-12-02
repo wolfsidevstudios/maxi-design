@@ -1,11 +1,11 @@
 
 import React, { useState, useRef } from 'react';
-import { Sparkles, ImageIcon, ArrowUp, Smartphone, Trash2, Zap, Palette, Code, ChevronDown, Layers, Cpu, Globe, X, Monitor } from './Icons';
+import { Sparkles, ImageIcon, ArrowUp, Smartphone, Trash2, Zap, Palette, Code, ChevronDown, Layers, Cpu, Globe, X, Monitor, BoxSelect } from './Icons';
 import { ProjectData } from '../types';
 
 interface LandingPageProps {
   view: 'create' | 'projects';
-  onStartProject: (initialPrompt: string, referenceImage?: string) => void;
+  onStartProject: (initialPrompt: string, referenceImage?: string, initialTab?: 'chat' | 'studio') => void;
   projects: ProjectData[];
   onLoadProject: (project: ProjectData) => void;
   onDeleteProject: (projectId: string) => void;
@@ -81,78 +81,107 @@ const LandingPage: React.FC<LandingPageProps> = ({ view, onStartProject, project
               </p>
             </div>
 
-            {/* Neo-Brutalist Input Section */}
-            <div className="w-full max-w-2xl relative z-10 mb-8">
-              <form onSubmit={handleSubmit} className="relative group">
-                <div className="relative bg-white border-2 border-black rounded-[2.5rem] shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all duration-200 focus-within:translate-x-[2px] focus-within:translate-y-[2px] focus-within:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex flex-col p-2 min-h-[160px]">
-                    <textarea
-                      value={prompt}
-                      onChange={(e) => setPrompt(e.target.value)}
-                      placeholder="I want to design an app that..."
-                      className="w-full bg-transparent px-8 py-6 text-xl font-medium text-black placeholder-gray-400 outline-none resize-none pb-20 rounded-[2rem]"
-                      style={{ lineHeight: '1.5' }}
-                    />
-                    
-                    {/* Image Preview */}
-                    {referenceImage && (
-                      <div className="absolute bottom-6 left-32 md:left-40">
-                         <div className="relative group/preview">
-                            <img src={referenceImage} alt="Ref" className="w-12 h-12 rounded-lg border-2 border-black object-cover" />
-                            <button 
-                              type="button" 
-                              onClick={() => setReferenceImage(null)}
-                              className="absolute -top-2 -right-2 bg-red-500 border border-black text-white rounded-full p-0.5 hover:scale-110 transition-transform"
-                            >
-                              <X size={12} />
-                            </button>
-                         </div>
+            {/* ACTION CARDS: PROMPT vs STUDIO */}
+            <div className="w-full max-w-4xl grid md:grid-cols-3 gap-6 relative z-10 mb-8">
+              
+              {/* CARD 1: AI Prompt (Spans 2 columns) */}
+              <div className="md:col-span-2 relative group">
+                <form onSubmit={handleSubmit} className="h-full">
+                  <div className="h-full bg-white border-2 border-black rounded-[2rem] shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all duration-200 focus-within:translate-x-[2px] focus-within:translate-y-[2px] focus-within:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex flex-col p-2 min-h-[220px]">
+                      <div className="px-6 pt-4 pb-2 text-xs font-black uppercase tracking-widest text-gray-400 flex items-center gap-2">
+                        <Sparkles size={14} className="text-[#FF6B4A]" /> AI Generator
                       </div>
-                    )}
+                      <textarea
+                        value={prompt}
+                        onChange={(e) => setPrompt(e.target.value)}
+                        placeholder="I want to design an app that..."
+                        className="w-full flex-1 bg-transparent px-6 py-2 text-xl font-medium text-black placeholder-gray-400 outline-none resize-none rounded-[2rem]"
+                        style={{ lineHeight: '1.5' }}
+                      />
+                      
+                      {/* Image Preview */}
+                      {referenceImage && (
+                        <div className="absolute bottom-6 left-32 md:left-40 z-20">
+                           <div className="relative group/preview">
+                              <img src={referenceImage} alt="Ref" className="w-12 h-12 rounded-lg border-2 border-black object-cover" />
+                              <button 
+                                type="button" 
+                                onClick={() => setReferenceImage(null)}
+                                className="absolute -top-2 -right-2 bg-red-500 border border-black text-white rounded-full p-0.5 hover:scale-110 transition-transform"
+                              >
+                                <X size={12} />
+                              </button>
+                           </div>
+                        </div>
+                      )}
 
-                    {/* Reference Button - Bottom Left */}
-                    <div className="absolute bottom-6 left-8">
-                        <input 
-                          type="file" 
-                          ref={fileInputRef} 
-                          className="hidden" 
-                          accept="image/*"
-                          onChange={handleImageUpload}
-                        />
-                        <button 
-                          type="button" 
-                          onClick={() => fileInputRef.current?.click()}
-                          className={`text-sm font-bold border-2 border-black px-4 py-2 rounded-full flex items-center gap-2 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] transition-all ${referenceImage ? 'bg-[#A3E635] text-black' : 'bg-gray-100 text-black hover:bg-gray-200'}`}
-                        >
-                          <ImageIcon size={18} /> {referenceImage ? 'Added' : 'Reference'}
-                        </button>
-                    </div>
-                    
-                    {/* Send Button - Bottom Right */}
-                    <div className="absolute bottom-6 right-6">
-                       <button 
-                        type="submit" 
-                        disabled={!prompt.trim()}
-                        className="bg-[#FF6B4A] hover:bg-[#FF5530] text-white border-2 border-black w-12 h-12 rounded-full flex items-center justify-center transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
-                      >
-                        <ArrowUp size={24} strokeWidth={3} />
-                      </button>
-                    </div>
-                </div>
-              </form>
-
-              {/* Suggestions */}
-              <div className="mt-8 flex flex-wrap justify-center gap-3">
-                {suggestions.map((s, i) => (
-                  <button
-                    key={i}
-                    onClick={() => onStartProject(s.label)}
-                    className="flex items-center gap-2 px-4 py-2 bg-white border-2 border-black rounded-lg text-sm font-bold text-black hover:bg-[#60A5FA] hover:text-white transition-all cursor-pointer shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px]"
-                  >
-                    <span className="text-base">{s.icon}</span>
-                    {s.label}
-                  </button>
-                ))}
+                      {/* Footer Actions */}
+                      <div className="flex justify-between items-center p-4 mt-auto">
+                          <div className="relative">
+                              <input 
+                                type="file" 
+                                ref={fileInputRef} 
+                                className="hidden" 
+                                accept="image/*"
+                                onChange={handleImageUpload}
+                              />
+                              <button 
+                                type="button" 
+                                onClick={() => fileInputRef.current?.click()}
+                                className={`text-sm font-bold border-2 border-black px-4 py-2 rounded-full flex items-center gap-2 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] transition-all ${referenceImage ? 'bg-[#A3E635] text-black' : 'bg-gray-100 text-black hover:bg-gray-200'}`}
+                              >
+                                <ImageIcon size={18} /> {referenceImage ? 'Added' : 'Reference'}
+                              </button>
+                          </div>
+                          <button 
+                            type="submit" 
+                            disabled={!prompt.trim()}
+                            className="bg-[#FF6B4A] hover:bg-[#FF5530] text-white border-2 border-black w-12 h-12 rounded-full flex items-center justify-center transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
+                          >
+                            <ArrowUp size={24} strokeWidth={3} />
+                          </button>
+                      </div>
+                  </div>
+                </form>
               </div>
+
+              {/* CARD 2: UI Studio (New Entry Point) */}
+              <div className="md:col-span-1">
+                 <button 
+                   onClick={() => onStartProject('', undefined, 'studio')}
+                   className="w-full h-full min-h-[220px] bg-[#60A5FA] border-2 border-black rounded-[2rem] shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] active:translate-x-[6px] active:translate-y-[6px] active:shadow-none transition-all flex flex-col p-6 text-left group overflow-hidden relative"
+                 >
+                    {/* Background Grid Pattern */}
+                    <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.2)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.2)_1px,transparent_1px)] bg-[size:20px_20px]"></div>
+                    
+                    <div className="relative z-10 flex justify-between items-start w-full mb-auto">
+                       <div className="bg-white/20 p-3 rounded-xl border-2 border-black backdrop-blur-sm group-hover:rotate-12 transition-transform duration-300">
+                          <BoxSelect size={32} className="text-white" strokeWidth={2.5} />
+                       </div>
+                       <div className="bg-black text-white text-[10px] font-bold uppercase px-2 py-1 rounded">Visual Editor</div>
+                    </div>
+
+                    <div className="relative z-10 mt-auto">
+                       <h3 className="text-3xl font-display font-black text-white uppercase leading-none mb-2 group-hover:translate-x-1 transition-transform">UI Studio</h3>
+                       <p className="text-white/90 font-medium text-sm leading-tight">Start from scratch. Drag, drop, and edit elements visually.</p>
+                    </div>
+                 </button>
+              </div>
+
+            </div>
+
+            {/* Suggestions */}
+            <div className="mb-12 flex flex-wrap justify-center gap-3 relative z-10">
+              {suggestions.map((s, i) => (
+                <button
+                  key={i}
+                  onClick={() => onStartProject(s.label)}
+                  className="flex items-center gap-2 px-4 py-2 bg-white border-2 border-black rounded-lg text-sm font-bold text-black hover:bg-[#A3E635] hover:border-black transition-all cursor-pointer shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px]"
+                >
+                  <span className="text-base">{s.icon}</span>
+                  {s.label}
+                </button>
+              ))}
             </div>
 
             {/* PRODUCT HUNT BADGE */}
@@ -244,17 +273,6 @@ const LandingPage: React.FC<LandingPageProps> = ({ view, onStartProject, project
                             </div>
                          </div>
                        </div>
-                   </div>
-
-                   {/* Card 5 - Iterations */}
-                   <div className="bg-[#DCFCE7] border-2 border-black p-8 rounded-2xl shadow-[8px_8px_0px_0px_black] hover:shadow-[4px_4px_0px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px] transition-all group">
-                      <div className="w-14 h-14 bg-[#4ADE80] border-2 border-black rounded-xl flex items-center justify-center mb-6 shadow-[4px_4px_0px_0px_black] group-hover:rotate-180 transition-transform duration-500">
-                         <Layers size={28} className="text-white" strokeWidth={2.5} />
-                      </div>
-                      <h3 className="text-2xl font-black mb-3 uppercase tracking-tight">Iterations</h3>
-                      <p className="font-medium text-gray-700 leading-relaxed">
-                        Refine your design with natural language. "Make the button bigger", "Dark mode", "Add a footer".
-                      </p>
                    </div>
 
                    {/* New Card 6 - Web UI Coming Soon */}

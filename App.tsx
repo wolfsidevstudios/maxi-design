@@ -349,7 +349,7 @@ function App() {
      const initialScreen: Screen = {
         id: 'screen-1',
         name: 'Home',
-        html: template.code
+        html: template.code // Uses the rich static HTML from CommunityPage
      };
 
      const initialMessages: Message[] = [
