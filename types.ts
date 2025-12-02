@@ -61,3 +61,13 @@ export interface User {
   email: string;
   picture: string;
 }
+
+export interface Template {
+  id: string;
+  name: string;
+  description: string;
+  category: string;
+  thumbnailGradient: string;
+  code: string;
+  theme: ThemeSettings;
+}

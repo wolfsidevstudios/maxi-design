@@ -65,7 +65,8 @@ import {
   Lock,
   Copy,
   FileCode,
-  ExternalLink
+  ExternalLink,
+  Users
 } from 'lucide-react';
 
 export {
@@ -133,5 +134,6 @@ export {
   Lock,
   Copy,
   FileCode,
-  ExternalLink
+  ExternalLink,
+  Users
 };

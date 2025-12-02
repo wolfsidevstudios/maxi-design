@@ -13,6 +13,7 @@ import MarketingPage from './components/WaitlistPage'; // Reusing file, updated 
 import LoginPage from './components/LoginPage';
 import OnboardingPage from './components/OnboardingPage';
 import CodeEditor from './components/CodeEditor';
+import CommunityPage from './components/CommunityPage';
 import { 
   createChatSession, 
   streamResponse 
@@ -56,7 +57,7 @@ import {
   BoxSelect,
   FileCode
 } from './components/Icons';
-import { Message, ThemeSettings, ViewMode, ProjectData, AppSettings, Screen, ModelType, User } from './types';
+import { Message, ThemeSettings, ViewMode, ProjectData, AppSettings, Screen, ModelType, User, Template } from './types';
 import { Chat } from '@google/genai';
 import JSZip from 'jszip';
 
@@ -83,7 +84,7 @@ function App() {
      return 'marketing';
   });
 
-  const [landingTab, setLandingTab] = useState<'create' | 'projects'>('create');
+  const [landingTab, setLandingTab] = useState<'create' | 'projects' | 'community'>('create');
   const [activeTab, setActiveTab] = useState<'chat' | 'theme' | 'screens' | 'studio' | 'code'>('chat');
   
   // Settings & Modal
@@ -321,7 +322,7 @@ function App() {
 
     const newProject: ProjectData = {
       id: newId,
-      name: initialPrompt,
+      name: initialPrompt || 'Untitled Project',
       lastEdited: Date.now(),
       messages: initialMessages,
       screens: [initialScreen],
@@ -362,6 +363,58 @@ function App() {
         handleSendMessageReal(initialPrompt, referenceImage || null);
       }, 500);
     }
+  };
+
+  const handleCloneTemplate = (template: Template) => {
+     const newId = Date.now().toString();
+     const initialScreen: Screen = {
+        id: 'screen-1',
+        name: 'Home',
+        html: template.code
+     };
+
+     const initialMessages: Message[] = [
+        {
+           id: 'msg-0',
+           role: 'model',
+           content: `Started project from template: ${template.name}`,
+           timestamp: Date.now()
+        }
+     ];
+
+     const newProject: ProjectData = {
+        id: newId,
+        name: `${template.name} (Clone)`,
+        lastEdited: Date.now(),
+        messages: initialMessages,
+        screens: [initialScreen],
+        activeScreenId: 'screen-1',
+        theme: template.theme,
+        settings: settings
+     };
+
+     setProjects(prev => [newProject, ...prev]);
+     setCurrentProjectId(newId);
+     setScreens([initialScreen]);
+     setActiveScreenId('screen-1');
+     
+     setMessages(initialMessages);
+     setChallengerMessages([]);
+     setChallengerHtmlCode('');
+     setTheme(template.theme);
+     setPanPosition({ x: 0, y: 0 });
+     setZoom(0.6);
+     setIsRaceMode(false);
+     setAttachedImage(null);
+     setSelectedElementStyles(null);
+     setActiveTool('select');
+     setActiveTab('chat');
+
+     // Initialize chat with context
+     chatSessionRef.current = createChatSession(initialMessages, settings.activeModel, settings.customApiKey, settings.enableThinking);
+
+     setViewMode('editor');
+     addNotification('success', 'Template Cloned', `Started new project from ${template.name}`);
   };
 
   const handleLoadProject = (project: ProjectData) => {
@@ -757,14 +810,33 @@ function App() {
            </div>
         )}
         <NotificationSystem notifications={notifications} onDismiss={removeNotification} />
-        <LandingPage 
-          view={landingTab}
-          onStartProject={handleStartProject} 
-          projects={projects}
-          onLoadProject={handleLoadProject}
-          onDeleteProject={handleDeleteProject}
-          onNavigate={(page) => setViewMode(page)}
-        />
+        
+        {landingTab === 'create' && (
+          <LandingPage 
+             view={landingTab}
+             onStartProject={handleStartProject} 
+             projects={projects}
+             onLoadProject={handleLoadProject}
+             onDeleteProject={handleDeleteProject}
+             onNavigate={(page) => setViewMode(page)}
+          />
+        )}
+        
+        {landingTab === 'projects' && (
+          <LandingPage 
+             view={landingTab}
+             onStartProject={handleStartProject} 
+             projects={projects}
+             onLoadProject={handleLoadProject}
+             onDeleteProject={handleDeleteProject}
+             onNavigate={(page) => setViewMode(page)}
+          />
+        )}
+
+        {landingTab === 'community' && (
+           <CommunityPage onCloneTemplate={handleCloneTemplate} />
+        )}
+
         {showSettings && <SettingsModal settings={settings} onSave={(s) => setSettings(s)} onClose={() => setShowSettings(false)} />}
       </div>
     );
