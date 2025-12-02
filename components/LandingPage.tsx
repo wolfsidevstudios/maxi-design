@@ -15,7 +15,6 @@ interface LandingPageProps {
 const LandingPage: React.FC<LandingPageProps> = ({ view, onStartProject, projects, onLoadProject, onDeleteProject, onNavigate }) => {
   const [prompt, setPrompt] = useState('');
   const [referenceImage, setReferenceImage] = useState<string | null>(null);
-  const [generationMode, setGenerationMode] = useState<'ui' | 'presentation'>('ui');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const suggestions = [
@@ -28,12 +27,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ view, onStartProject, project
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (prompt.trim()) {
-      onStartProject(
-        prompt, 
-        referenceImage || undefined, 
-        'chat',
-        generationMode === 'presentation' ? 'presentation' : 'mobile'
-      );
+      onStartProject(prompt, referenceImage || undefined, 'chat', 'mobile');
     }
   };
 
@@ -87,36 +81,17 @@ const LandingPage: React.FC<LandingPageProps> = ({ view, onStartProject, project
               </p>
             </div>
 
-            {/* ACTION CARDS: PROMPT vs STUDIO */}
-            <div className="w-full max-w-4xl grid md:grid-cols-3 gap-6 relative z-10 mb-8 items-end">
-              
-              {/* CARD 1: AI Prompt (Spans 2 columns) */}
-              <div className="md:col-span-2 relative group flex flex-col gap-0">
-                {/* TABS */}
-                <div className="flex gap-2 mb-[-2px] ml-4 z-0">
-                  <button 
-                    onClick={() => setGenerationMode('ui')}
-                    className={`px-4 py-2 rounded-t-xl border-2 border-black border-b-0 font-bold text-xs uppercase tracking-wider transition-all ${generationMode === 'ui' ? 'bg-white text-black translate-y-[2px] z-10' : 'bg-gray-200 text-gray-500 hover:bg-gray-100'}`}
-                  >
-                    <div className="flex items-center gap-2"><Smartphone size={14} /> UI Designer</div>
-                  </button>
-                  <button 
-                    onClick={() => setGenerationMode('presentation')}
-                    className={`px-4 py-2 rounded-t-xl border-2 border-black border-b-0 font-bold text-xs uppercase tracking-wider transition-all ${generationMode === 'presentation' ? 'bg-white text-black translate-y-[2px] z-10' : 'bg-gray-200 text-gray-500 hover:bg-gray-100'}`}
-                  >
-                    <div className="flex items-center gap-2"><Presentation size={14} /> Presentations</div>
-                  </button>
-                </div>
-
+            {/* ACTION CARD: PROMPT ONLY */}
+            <div className="w-full max-w-3xl relative z-10 mb-8">
                 <form onSubmit={handleSubmit} className="h-full relative z-10">
-                  <div className="h-full bg-white border-2 border-black rounded-[2rem] rounded-tl-none shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all duration-200 focus-within:translate-x-[2px] focus-within:translate-y-[2px] focus-within:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex flex-col p-2 min-h-[220px]">
+                  <div className="h-full bg-white border-2 border-black rounded-[2rem] shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all duration-200 focus-within:translate-x-[2px] focus-within:translate-y-[2px] focus-within:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex flex-col p-2 min-h-[220px]">
                       <div className="px-6 pt-4 pb-2 text-xs font-black uppercase tracking-widest text-gray-400 flex items-center gap-2">
-                        <Sparkles size={14} className="text-[#FF6B4A]" /> {generationMode === 'presentation' ? 'Presentation Generator' : 'UI Generator'}
+                        <Sparkles size={14} className="text-[#FF6B4A]" /> AI Mobile App Generator
                       </div>
                       <textarea
                         value={prompt}
                         onChange={(e) => setPrompt(e.target.value)}
-                        placeholder={generationMode === 'presentation' ? "I need a pitch deck for a fintech startup..." : "I want to design an app that..."}
+                        placeholder="I want to design a fitness app tracking dashboard..."
                         className="w-full flex-1 bg-transparent px-6 py-2 text-xl font-medium text-black placeholder-gray-400 outline-none resize-none rounded-[2rem]"
                         style={{ lineHeight: '1.5' }}
                       />
@@ -165,31 +140,6 @@ const LandingPage: React.FC<LandingPageProps> = ({ view, onStartProject, project
                       </div>
                   </div>
                 </form>
-              </div>
-
-              {/* CARD 2: UI Studio (New Entry Point) */}
-              <div className="md:col-span-1 h-full">
-                 <button 
-                   onClick={() => onStartProject('', undefined, 'studio', 'mobile')}
-                   className="w-full h-full min-h-[220px] bg-[#60A5FA] border-2 border-black rounded-[2rem] shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] active:translate-x-[6px] active:translate-y-[6px] active:shadow-none transition-all flex flex-col p-6 text-left group overflow-hidden relative"
-                 >
-                    {/* Background Grid Pattern */}
-                    <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.2)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.2)_1px,transparent_1px)] bg-[size:20px_20px]"></div>
-                    
-                    <div className="relative z-10 flex justify-between items-start w-full mb-auto">
-                       <div className="bg-white/20 p-3 rounded-xl border-2 border-black backdrop-blur-sm group-hover:rotate-12 transition-transform duration-300">
-                          <BoxSelect size={32} className="text-white" strokeWidth={2.5} />
-                       </div>
-                       <div className="bg-black text-white text-[10px] font-bold uppercase px-2 py-1 rounded">Visual Editor</div>
-                    </div>
-
-                    <div className="relative z-10 mt-auto">
-                       <h3 className="text-3xl font-display font-black text-white uppercase leading-none mb-2 group-hover:translate-x-1 transition-transform">UI Studio</h3>
-                       <p className="text-white/90 font-medium text-sm leading-tight">Start from scratch. Drag, drop, and edit elements visually.</p>
-                    </div>
-                 </button>
-              </div>
-
             </div>
 
             {/* Suggestions */}
@@ -277,7 +227,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ view, onStartProject, project
                    </div>
                    
                    {/* Card 4 - Race Mode */}
-                   <div className="bg-[#FFEDD5] border-2 border-black p-8 rounded-2xl shadow-[8px_8px_0px_0px_black] hover:shadow-[4px_4px_0px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px] transition-all group md:col-span-2">
+                   <div className="bg-[#FFEDD5] border-2 border-black p-8 rounded-2xl shadow-[8px_8px_0px_0px_black] hover:shadow-[4px_4px_0px_0px_black] hover:translate-x-[2px] hover:translate-y-[2px] transition-all group md:col-span-3">
                        <div className="flex flex-col md:flex-row gap-6 items-start">
                          <div>
                             <div className="w-14 h-14 bg-[#FB923C] border-2 border-black rounded-xl flex items-center justify-center mb-6 shadow-[4px_4px_0px_0px_black] group-hover:translate-x-2 transition-transform">
@@ -296,24 +246,9 @@ const LandingPage: React.FC<LandingPageProps> = ({ view, onStartProject, project
                          </div>
                        </div>
                    </div>
-
-                   {/* New Card 6 - Web UI Coming Soon */}
-                   <div className="bg-gray-50 border-2 border-black border-dashed p-8 rounded-2xl flex flex-col items-center justify-center text-center opacity-80 hover:opacity-100 transition-opacity">
-                      <div className="w-14 h-14 bg-gray-200 border-2 border-black rounded-xl flex items-center justify-center mb-4">
-                         <Monitor size={28} className="text-gray-500" strokeWidth={2.5} />
-                      </div>
-                      <h3 className="text-xl font-black mb-2 uppercase tracking-tight">Web UI Generation</h3>
-                      <div className="bg-black text-white text-[10px] font-bold px-2 py-1 rounded mb-2 uppercase tracking-widest">Coming Soon</div>
-                      <p className="text-sm font-medium text-gray-500">
-                        We are working on full web application generation. Stay tuned for desktop layouts.
-                      </p>
-                   </div>
                 </div>
              </div>
           </div>
-          
-          {/* ... Rest of components ... */}
-          {/* Truncated for brevity as no other changes in lower sections */}
         </div>
       )}
 

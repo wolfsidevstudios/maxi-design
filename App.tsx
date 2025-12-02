@@ -15,6 +15,7 @@ import OnboardingPage from './components/OnboardingPage';
 import CodeEditor from './components/CodeEditor';
 import CommunityPage from './components/CommunityPage';
 import SlidesPage from './components/SlidesPage';
+import WebBuilderPage from './components/WebBuilderPage';
 import { 
   createChatSession, 
   streamResponse 
@@ -57,7 +58,8 @@ import {
   MousePointerClick,
   BoxSelect,
   FileCode,
-  Presentation
+  Presentation,
+  Eye
 } from './components/Icons';
 import { Message, ThemeSettings, ViewMode, ProjectData, AppSettings, Screen, ModelType, User, Template } from './types';
 import { Chat } from '@google/genai';
@@ -81,9 +83,12 @@ function App() {
      return 'marketing';
   });
 
-  const [landingTab, setLandingTab] = useState<'create' | 'projects' | 'community' | 'slides'>('create');
+  const [landingTab, setLandingTab] = useState<'create' | 'projects' | 'community' | 'slides' | 'web-apps'>('create');
   const [activeTab, setActiveTab] = useState<'chat' | 'theme' | 'screens' | 'studio' | 'code'>('chat');
   
+  // Specific state for Web Mode Toggle
+  const [webMode, setWebMode] = useState<'preview' | 'code'>('preview');
+
   const [showSettings, setShowSettings] = useState(false);
   const [settings, setSettings] = useState<AppSettings>(() => {
     try {
@@ -799,6 +804,7 @@ function App() {
         
         {landingTab === 'create' && <LandingPage view={landingTab} onStartProject={handleStartProject} projects={projects} onLoadProject={handleLoadProject} onDeleteProject={handleDeleteProject} onNavigate={(page) => setViewMode(page)} />}
         {landingTab === 'slides' && <SlidesPage onStartProject={handleStartProject} projects={projects} onLoadProject={handleLoadProject} onDeleteProject={handleDeleteProject} />}
+        {landingTab === 'web-apps' && <WebBuilderPage onStartProject={handleStartProject} projects={projects} onLoadProject={handleLoadProject} onDeleteProject={handleDeleteProject} />}
         {/* Only show mobile/web projects in the "Projects" tab to avoid clutter */}
         {landingTab === 'projects' && <LandingPage view={landingTab} onStartProject={handleStartProject} projects={projects.filter(p => p.type !== 'presentation')} onLoadProject={handleLoadProject} onDeleteProject={handleDeleteProject} onNavigate={(page) => setViewMode(page)} />}
         {landingTab === 'community' && <CommunityPage onCloneTemplate={handleCloneTemplate} />}
@@ -814,35 +820,39 @@ function App() {
       {showSettings && <SettingsModal settings={settings} onSave={(s) => setSettings(s)} onClose={() => setShowSettings(false)} />}
 
       {/* LEFT SIDEBAR */}
-      <div className="w-[380px] flex flex-col border-r-2 border-black bg-white z-20 transition-all relative shadow-[4px_0px_0px_0px_rgba(0,0,0,0.05)]">
+      <div className={`${isWebProject ? 'w-[450px]' : 'w-[380px]'} flex flex-col border-r-2 border-black bg-white z-20 transition-all relative shadow-[4px_0px_0px_0px_rgba(0,0,0,0.05)]`}>
         <div className="h-16 border-b-2 border-black flex items-center justify-between px-4 bg-white shrink-0">
           <div className="flex items-center gap-3">
             <button onClick={() => setViewMode('landing')} className="p-2 hover:bg-gray-100 rounded-lg text-black transition-colors border-2 border-transparent hover:border-black hover:shadow-[2px_2px_0px_0px_black]"><Home size={18} strokeWidth={2.5} /></button>
             <div className="flex items-center gap-2">
-               <div className="w-8 h-8 bg-[#FF6B4A] border-2 border-black flex items-center justify-center text-white font-black text-sm shadow-[2px_2px_0px_0px_black] rounded-md">M</div>
+               <div className={`w-8 h-8 ${isWebProject ? 'bg-blue-500' : 'bg-[#FF6B4A]'} border-2 border-black flex items-center justify-center text-white font-black text-sm shadow-[2px_2px_0px_0px_black] rounded-md`}>M</div>
                <span className="font-bold text-black tracking-tight text-lg">Maxi Design</span>
             </div>
           </div>
           <div className="flex items-center gap-2">
-             <button onClick={() => handleStartProject('', undefined, 'studio')} className="hidden md:flex p-2 hover:bg-gray-100 rounded-lg text-black border-2 border-transparent hover:border-black hover:shadow-[2px_2px_0px_0px_black] transition-all" title="Studio Mode"><BoxSelect size={18} strokeWidth={2.5} /></button>
-            <button onClick={() => setShowSettings(true)} className="p-2 hover:bg-[#A3E635] rounded-lg text-black border-2 border-transparent hover:border-black hover:shadow-[2px_2px_0px_0px_black] transition-all"><Settings size={18} strokeWidth={2.5} /></button>
+             {!isWebProject && <button onClick={() => handleStartProject('', undefined, 'studio')} className="hidden md:flex p-2 hover:bg-gray-100 rounded-lg text-black border-2 border-transparent hover:border-black hover:shadow-[2px_2px_0px_0px_black] transition-all" title="Studio Mode"><BoxSelect size={18} strokeWidth={2.5} /></button>}
+             <button onClick={() => setShowSettings(true)} className="p-2 hover:bg-[#A3E635] rounded-lg text-black border-2 border-transparent hover:border-black hover:shadow-[2px_2px_0px_0px_black] transition-all"><Settings size={18} strokeWidth={2.5} /></button>
           </div>
         </div>
 
-        <div className="flex justify-center pt-4 pb-2 border-b-2 border-black bg-[#FDFCF8] shrink-0 overflow-x-auto">
-          <div className="flex items-center gap-1 px-2">
-            <button onClick={() => setActiveTab('chat')} className={`px-2 py-2 text-xs font-bold uppercase tracking-wider rounded-lg transition-all flex items-center gap-1 border-2 ${activeTab === 'chat' ? 'bg-[#FF6B4A] text-white border-black shadow-[2px_2px_0px_0px_black]' : 'bg-white text-gray-500 border-gray-200 hover:border-black hover:text-black'}`}><MessageSquare size={14} /> Chat</button>
-            <button onClick={() => setActiveTab('studio')} className={`px-2 py-2 text-xs font-bold uppercase tracking-wider rounded-lg transition-all flex items-center gap-1 border-2 ${activeTab === 'studio' ? 'bg-[#A3E635] text-black border-black shadow-[2px_2px_0px_0px_black]' : 'bg-white text-gray-500 border-gray-200 hover:border-black hover:text-black'}`}><BoxSelect size={14} /> Studio</button>
-            <button onClick={() => setActiveTab('code')} className={`px-2 py-2 text-xs font-bold uppercase tracking-wider rounded-lg transition-all flex items-center gap-1 border-2 ${activeTab === 'code' ? 'bg-[#333] text-white border-black shadow-[2px_2px_0px_0px_black]' : 'bg-white text-gray-500 border-gray-200 hover:border-black hover:text-black'}`}><FileCode size={14} /></button>
-            <button onClick={() => setActiveTab('theme')} className={`px-2 py-2 text-xs font-bold uppercase tracking-wider rounded-lg transition-all flex items-center gap-1 border-2 ${activeTab === 'theme' ? 'bg-gray-100 text-black border-black' : 'bg-white text-gray-500 border-gray-200 hover:border-black hover:text-black'}`}><Palette size={14} /></button>
-            <button onClick={() => setActiveTab('screens')} className={`px-2 py-2 text-xs font-bold uppercase tracking-wider rounded-lg transition-all flex items-center gap-1 border-2 ${activeTab === 'screens' ? 'bg-gray-100 text-black border-black' : 'bg-white text-gray-500 border-gray-200 hover:border-black hover:text-black'}`}><StickyNote size={14} /></button>
+        {/* Hide Tabs for Web Project since it's a dedicated split view */}
+        {!isWebProject && (
+          <div className="flex justify-center pt-4 pb-2 border-b-2 border-black bg-[#FDFCF8] shrink-0 overflow-x-auto">
+            <div className="flex items-center gap-1 px-2">
+              <button onClick={() => setActiveTab('chat')} className={`px-2 py-2 text-xs font-bold uppercase tracking-wider rounded-lg transition-all flex items-center gap-1 border-2 ${activeTab === 'chat' ? 'bg-[#FF6B4A] text-white border-black shadow-[2px_2px_0px_0px_black]' : 'bg-white text-gray-500 border-gray-200 hover:border-black hover:text-black'}`}><MessageSquare size={14} /> Chat</button>
+              <button onClick={() => setActiveTab('studio')} className={`px-2 py-2 text-xs font-bold uppercase tracking-wider rounded-lg transition-all flex items-center gap-1 border-2 ${activeTab === 'studio' ? 'bg-[#A3E635] text-black border-black shadow-[2px_2px_0px_0px_black]' : 'bg-white text-gray-500 border-gray-200 hover:border-black hover:text-black'}`}><BoxSelect size={14} /> Studio</button>
+              <button onClick={() => setActiveTab('code')} className={`px-2 py-2 text-xs font-bold uppercase tracking-wider rounded-lg transition-all flex items-center gap-1 border-2 ${activeTab === 'code' ? 'bg-[#333] text-white border-black shadow-[2px_2px_0px_0px_black]' : 'bg-white text-gray-500 border-gray-200 hover:border-black hover:text-black'}`}><FileCode size={14} /></button>
+              <button onClick={() => setActiveTab('theme')} className={`px-2 py-2 text-xs font-bold uppercase tracking-wider rounded-lg transition-all flex items-center gap-1 border-2 ${activeTab === 'theme' ? 'bg-gray-100 text-black border-black' : 'bg-white text-gray-500 border-gray-200 hover:border-black hover:text-black'}`}><Palette size={14} /></button>
+              <button onClick={() => setActiveTab('screens')} className={`px-2 py-2 text-xs font-bold uppercase tracking-wider rounded-lg transition-all flex items-center gap-1 border-2 ${activeTab === 'screens' ? 'bg-gray-100 text-black border-black' : 'bg-white text-gray-500 border-gray-200 hover:border-black hover:text-black'}`}><StickyNote size={14} /></button>
+            </div>
           </div>
-        </div>
+        )}
 
         <div className="flex-1 overflow-y-auto relative custom-scrollbar bg-white">
-          {activeTab === 'theme' && <ThemeEditor theme={theme} setTheme={setTheme} />}
-          {activeTab === 'screens' && (
+          {activeTab === 'theme' && !isWebProject && <ThemeEditor theme={theme} setTheme={setTheme} />}
+          {activeTab === 'screens' && !isWebProject && (
              <div className="p-4 space-y-4">
+                {/* ... Screen management code ... */}
                 <div className="flex justify-between items-center mb-2">
                    <h3 className="text-xs font-black text-black uppercase tracking-widest">App Screens</h3>
                    <button onClick={handleAddScreen} className="flex items-center gap-1 text-xs font-bold bg-[#60A5FA] text-white px-2 py-1 rounded border-2 border-black shadow-[2px_2px_0px_0px_black] hover:translate-y-[1px] hover:translate-x-[1px] hover:shadow-[1px_1px_0px_0px_black] transition-all"><PlusSquare size={14} /> Add</button>
@@ -859,28 +869,30 @@ function App() {
                 </div>
              </div>
           )}
-          {activeTab === 'studio' && (
+          {activeTab === 'studio' && !isWebProject && (
              <StudioPanel 
                selectedElement={selectedElementStyles} 
                onUpdateStyle={handleStudioUpdate}
                onInsertElement={handleInsertElement}
              />
           )}
-          {activeTab === 'code' && (
+          {activeTab === 'code' && !isWebProject && (
              <CodeEditor 
                code={getActiveScreenHtml()} 
                onChange={updateActiveScreenHtml}
              />
           )}
-          {activeTab === 'chat' && (
+          
+          {/* Always show Chat if Web Project, or if activeTab is chat */}
+          {(activeTab === 'chat' || isWebProject) && (
             <div className="flex flex-col min-h-full p-4 gap-6 pb-28">
               {messages.map((msg) => (
                 <div key={msg.id} className={`flex gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : ''} animate-in fade-in slide-in-from-bottom-2`}>
-                  <div className={`w-8 h-8 rounded-lg border-2 border-black flex items-center justify-center flex-shrink-0 shadow-[2px_2px_0px_0px_black] ${msg.role === 'user' ? 'bg-black text-white' : 'bg-[#FF6B4A] text-white'}`}>
+                  <div className={`w-8 h-8 rounded-lg border-2 border-black flex items-center justify-center flex-shrink-0 shadow-[2px_2px_0px_0px_black] ${msg.role === 'user' ? 'bg-black text-white' : (isWebProject ? 'bg-blue-500' : 'bg-[#FF6B4A]') + ' text-white'}`}>
                     {msg.role === 'user' ? 'U' : <Smartphone size={16} />}
                   </div>
                   <div className={`flex flex-col gap-2 max-w-[85%]`}>
-                    <div className={`p-4 rounded-lg text-sm font-medium leading-relaxed border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] ${msg.role === 'user' ? 'bg-white text-black' : 'bg-[#F0FDF4] text-black'}`}>
+                    <div className={`p-4 rounded-lg text-sm font-medium leading-relaxed border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] ${msg.role === 'user' ? 'bg-white text-black' : (isWebProject ? 'bg-blue-50' : 'bg-[#F0FDF4]') + ' text-black'}`}>
                       {msg.content}
                     </div>
                     {msg.attachments && msg.attachments.length > 0 && (
@@ -906,7 +918,7 @@ function App() {
           )}
         </div>
 
-        {activeTab === 'chat' && (
+        {(activeTab === 'chat' || isWebProject) && (
           <div className="p-4 bg-white/90 backdrop-blur-sm border-t-2 border-black absolute bottom-0 left-0 right-0 z-20">
              {attachedImage && (
                 <div className="absolute -top-16 left-4 bg-white p-2 rounded-lg border-2 border-black shadow-[4px_4px_0px_0px_black] animate-in fade-in slide-in-from-bottom-2">
@@ -926,7 +938,7 @@ function App() {
                       handleSendMessageReal(inputValue);
                     }
                   }}
-                  placeholder="Ask AI to design..."
+                  placeholder={isWebProject ? "Describe your web app..." : "Ask AI to design..."}
                   className="w-full bg-transparent pl-12 pr-12 py-3 text-sm font-medium text-black focus:outline-none focus:ring-0 resize-none h-14 flex items-center overflow-hidden rounded-xl"
                   style={{ minHeight: '56px', maxHeight: '56px' }}
                 />
@@ -934,17 +946,17 @@ function App() {
                    <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleImageUpload} />
                    <button onClick={() => fileInputRef.current?.click()} className="p-2 hover:bg-gray-100 rounded-lg text-gray-500 hover:text-black transition-colors" title="Attach Image"><Paperclip size={18} strokeWidth={2.5} /></button>
                 </div>
-                <button onClick={() => handleSendMessageReal(inputValue)} disabled={!inputValue.trim() || isGenerating} className="absolute right-2 top-2 bottom-2 aspect-square bg-[#FF6B4A] text-white rounded-lg border-2 border-black hover:bg-[#FF5530] disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center shadow-[2px_2px_0px_0px_black] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_black] active:shadow-none active:translate-x-[2px] active:translate-y-[2px] active:shadow-none">{isGenerating ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} strokeWidth={2.5} />}</button>
+                <button onClick={() => handleSendMessageReal(inputValue)} disabled={!inputValue.trim() || isGenerating} className={`absolute right-2 top-2 bottom-2 aspect-square ${isWebProject ? 'bg-blue-600 hover:bg-blue-500' : 'bg-[#FF6B4A] hover:bg-[#FF5530]'} text-white rounded-lg border-2 border-black disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center shadow-[2px_2px_0px_0px_black] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_black] active:shadow-none active:translate-x-[2px] active:translate-y-[2px] active:shadow-none`}>{isGenerating ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} strokeWidth={2.5} />}</button>
              </div>
           </div>
         )}
       </div>
 
       {/* RIGHT CANVAS */}
-      <div className="flex-1 relative flex flex-col bg-[#FDFBD4]">
+      <div className={`flex-1 relative flex flex-col bg-[#FDFBD4]`}>
         <div className="h-16 border-b-2 border-black flex items-center justify-between px-6 bg-white z-20 shrink-0">
           <div className="flex items-center gap-2 text-sm text-black font-bold uppercase tracking-wide">
-            <span className="bg-[#A3E635] px-2 py-0.5 border-2 border-black rounded shadow-[2px_2px_0px_0px_black]">Project</span>
+            <span className={`bg-[${isWebProject ? '#3B82F6' : '#A3E635'}] px-2 py-0.5 border-2 border-black rounded shadow-[2px_2px_0px_0px_black] ${isWebProject ? 'text-white' : ''}`}>Project</span>
             <span className="text-black font-black">/</span>
             <span className="flex items-center gap-1 bg-white border-2 border-black px-2 py-0.5 rounded shadow-[2px_2px_0px_0px_black] text-xs">
               {screens.find(s => s.id === activeScreenId)?.name || 'Home'} 
@@ -953,65 +965,108 @@ function App() {
             {isPresentation && <span className="ml-2 bg-purple-100 text-purple-600 px-2 py-0.5 rounded border border-purple-200 text-[10px] font-bold">SLIDES</span>}
           </div>
           <div className="flex items-center gap-3">
-             <button onClick={() => setActiveTab('studio')} className={`flex items-center gap-2 px-4 py-2 border-2 border-black rounded-lg text-xs font-bold uppercase tracking-wider transition-all shadow-[2px_2px_0px_0px_black] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_black] ${activeTab === 'studio' ? 'bg-black text-white' : 'bg-white hover:bg-gray-50 text-black'}`}>
+             {/* WEB PROJECT: TOGGLE PREVIEW / CODE */}
+             {isWebProject && (
+                <div className="flex bg-gray-100 rounded-lg p-1 border-2 border-black shadow-[2px_2px_0px_0px_black]">
+                   <button 
+                     onClick={() => setWebMode('preview')} 
+                     className={`px-3 py-1 rounded-md text-xs font-bold uppercase transition-all flex items-center gap-2 ${webMode === 'preview' ? 'bg-white border-2 border-black shadow-sm' : 'text-gray-500 hover:text-black'}`}
+                   >
+                     <Eye size={14} /> Preview
+                   </button>
+                   <button 
+                     onClick={() => setWebMode('code')} 
+                     className={`px-3 py-1 rounded-md text-xs font-bold uppercase transition-all flex items-center gap-2 ${webMode === 'code' ? 'bg-white border-2 border-black shadow-sm' : 'text-gray-500 hover:text-black'}`}
+                   >
+                     <Code size={14} /> Code
+                   </button>
+                </div>
+             )}
+
+             {!isWebProject && <button onClick={() => setActiveTab('studio')} className={`flex items-center gap-2 px-4 py-2 border-2 border-black rounded-lg text-xs font-bold uppercase tracking-wider transition-all shadow-[2px_2px_0px_0px_black] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_black] ${activeTab === 'studio' ? 'bg-black text-white' : 'bg-white hover:bg-gray-50 text-black'}`}>
                <BoxSelect size={16} strokeWidth={2.5} /> Studio
-             </button>
-             <button onClick={toggleRaceMode} className={`flex items-center gap-2 px-4 py-2 border-2 border-black rounded-lg text-xs font-bold uppercase tracking-wider transition-all shadow-[2px_2px_0px_0px_black] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_black] ${isRaceMode ? 'bg-black text-white' : 'bg-white hover:bg-gray-50 text-black'}`}><Swords size={16} strokeWidth={2.5} /> {isRaceMode ? 'End Race' : 'Race Mode'}</button>
+             </button>}
+             
+             {!isWebProject && <button onClick={toggleRaceMode} className={`flex items-center gap-2 px-4 py-2 border-2 border-black rounded-lg text-xs font-bold uppercase tracking-wider transition-all shadow-[2px_2px_0px_0px_black] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_black] ${isRaceMode ? 'bg-black text-white' : 'bg-white hover:bg-gray-50 text-black'}`}><Swords size={16} strokeWidth={2.5} /> {isRaceMode ? 'End Race' : 'Race Mode'}</button>}
              <div className="w-px h-6 bg-gray-300 mx-1"></div>
              <button onClick={handleExport} className="px-4 py-2 bg-[#FF6B4A] text-white border-2 border-black rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-[#FF5530] transition-all flex items-center gap-2 shadow-[2px_2px_0px_0px_black] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_black]"><Download size={14} strokeWidth={2.5} /> Export</button>
           </div>
         </div>
 
-        <div 
-           className={`flex-1 relative overflow-hidden flex items-center justify-center dot-pattern group ${activeTool === 'pan' ? (isPanning ? 'cursor-grabbing' : 'cursor-grab') : 'cursor-default'}`}
-           onMouseDown={handleMouseDown}
-           onMouseMove={handleMouseMove}
-           onMouseUp={handleMouseUp}
-           onMouseLeave={handleMouseUp}
-        >
-          <div className="absolute bottom-8 z-50 flex items-center gap-2 bg-white p-2 rounded-xl shadow-[4px_4px_0px_0px_black] border-2 border-black transition-transform hover:scale-105">
-             <button onClick={() => setActiveTool('select')} className={`p-2 rounded-lg border-2 transition-all ${activeTool === 'select' ? 'bg-[#FF6B4A] text-white border-black shadow-[2px_2px_0px_0px_black]' : 'border-transparent text-gray-600 hover:bg-gray-100 hover:border-black'}`} title="Select"><MousePointer2 size={18} strokeWidth={2.5} /></button>
-             <button onClick={() => setActiveTool('pan')} className={`p-2 rounded-lg border-2 transition-all ${activeTool === 'pan' ? 'bg-[#FF6B4A] text-white border-black shadow-[2px_2px_0px_0px_black]' : 'border-transparent text-gray-600 hover:bg-gray-100 hover:border-black'}`} title="Pan"><Hand size={18} strokeWidth={2.5} /></button>
-             <div className="w-0.5 h-6 bg-black mx-1"></div>
-             <button className="p-2 hover:bg-gray-100 rounded-lg text-black transition-colors border-2 border-transparent hover:border-black" onClick={() => setZoom(z => Math.max(0.3, z - 0.1))}><ZoomOut size={18} strokeWidth={2.5} /></button>
-             <span className="text-sm font-bold w-12 text-center text-black tabular-nums">{Math.round(zoom * 100)}%</span>
-             <button className="p-2 hover:bg-gray-100 rounded-lg text-black transition-colors border-2 border-transparent hover:border-black" onClick={() => setZoom(z => Math.min(2.0, z + 0.1))}><ZoomIn size={18} strokeWidth={2.5} /></button>
-          </div>
+        {/* WEB MODE: FULL CANVAS */}
+        {isWebProject ? (
+           <div className="flex-1 relative bg-gray-100 overflow-hidden">
+              {webMode === 'preview' ? (
+                 <div className="w-full h-full p-0">
+                    <MobileFrame 
+                      htmlContent={getActiveScreenHtml()} 
+                      scale={1} 
+                      loadingPhase={designPhase}
+                      type="web"
+                    />
+                 </div>
+              ) : (
+                 <div className="w-full h-full">
+                    <CodeEditor 
+                      code={getActiveScreenHtml()} 
+                      onChange={updateActiveScreenHtml}
+                    />
+                 </div>
+              )}
+           </div>
+        ) : (
+           /* MOBILE MODE: PAN/ZOOM CANVAS */
+           <div 
+             className={`flex-1 relative overflow-hidden flex items-center justify-center dot-pattern group ${activeTool === 'pan' ? (isPanning ? 'cursor-grabbing' : 'cursor-grab') : 'cursor-default'}`}
+             onMouseDown={handleMouseDown}
+             onMouseMove={handleMouseMove}
+             onMouseUp={handleMouseUp}
+             onMouseLeave={handleMouseUp}
+           >
+             <div className="absolute bottom-8 z-50 flex items-center gap-2 bg-white p-2 rounded-xl shadow-[4px_4px_0px_0px_black] border-2 border-black transition-transform hover:scale-105">
+                <button onClick={() => setActiveTool('select')} className={`p-2 rounded-lg border-2 transition-all ${activeTool === 'select' ? 'bg-[#FF6B4A] text-white border-black shadow-[2px_2px_0px_0px_black]' : 'border-transparent text-gray-600 hover:bg-gray-100 hover:border-black'}`} title="Select"><MousePointer2 size={18} strokeWidth={2.5} /></button>
+                <button onClick={() => setActiveTool('pan')} className={`p-2 rounded-lg border-2 transition-all ${activeTool === 'pan' ? 'bg-[#FF6B4A] text-white border-black shadow-[2px_2px_0px_0px_black]' : 'border-transparent text-gray-600 hover:bg-gray-100 hover:border-black'}`} title="Pan"><Hand size={18} strokeWidth={2.5} /></button>
+                <div className="w-0.5 h-6 bg-black mx-1"></div>
+                <button className="p-2 hover:bg-gray-100 rounded-lg text-black transition-colors border-2 border-transparent hover:border-black" onClick={() => setZoom(z => Math.max(0.3, z - 0.1))}><ZoomOut size={18} strokeWidth={2.5} /></button>
+                <span className="text-sm font-bold w-12 text-center text-black tabular-nums">{Math.round(zoom * 100)}%</span>
+                <button className="p-2 hover:bg-gray-100 rounded-lg text-black transition-colors border-2 border-transparent hover:border-black" onClick={() => setZoom(z => Math.min(2.0, z + 0.1))}><ZoomIn size={18} strokeWidth={2.5} /></button>
+             </div>
 
-          <div 
-            style={{ 
-              transform: `translate(${panPosition.x}px, ${panPosition.y}px)`,
-              transition: isPanning ? 'none' : 'transform 0.1s ease-out',
-              display: 'flex', gap: '60px', alignItems: 'center', justifyContent: 'center'
-            }}
-          >
-            <div className="relative flex flex-col items-center gap-4">
+             <div 
+               style={{ 
+                 transform: `translate(${panPosition.x}px, ${panPosition.y}px)`,
+                 transition: isPanning ? 'none' : 'transform 0.1s ease-out',
+                 display: 'flex', gap: '60px', alignItems: 'center', justifyContent: 'center'
+               }}
+             >
+               <div className="relative flex flex-col items-center gap-4">
+                  {isRaceMode && (
+                    <div className="bg-white px-4 py-2 rounded-lg border-2 border-black shadow-[4px_4px_0px_0px_black] text-sm font-black flex flex-col items-center gap-2">
+                       <div className="flex items-center gap-2"><BrainCircuit size={16} /> {settings.activeModel === 'gemini-3-pro-preview' ? 'Gemini 3.0 Pro' : settings.activeModel}</div>
+                       {isRaceMode && <button onClick={() => handleWinRace('main')} className="bg-[#A3E635] hover:bg-[#8CD321] text-black text-xs px-3 py-1 rounded border border-black font-bold uppercase tracking-wider">Select Winner</button>}
+                    </div>
+                  )}
+                  <MobileFrame 
+                     htmlContent={getActiveScreenHtml()} 
+                     scale={zoom} 
+                     loadingPhase={designPhase}
+                     enableEditMode={activeTool === 'select'}
+                     type={activeProject?.type || 'mobile'}
+                  />
+               </div>
+
                {isRaceMode && (
-                 <div className="bg-white px-4 py-2 rounded-lg border-2 border-black shadow-[4px_4px_0px_0px_black] text-sm font-black flex flex-col items-center gap-2">
-                    <div className="flex items-center gap-2"><BrainCircuit size={16} /> {settings.activeModel === 'gemini-3-pro-preview' ? 'Gemini 3.0 Pro' : settings.activeModel}</div>
-                    {isRaceMode && <button onClick={() => handleWinRace('main')} className="bg-[#A3E635] hover:bg-[#8CD321] text-black text-xs px-3 py-1 rounded border border-black font-bold uppercase tracking-wider">Select Winner</button>}
+                 <div className="relative flex flex-col items-center gap-4">
+                    <div className="bg-white px-4 py-2 rounded-lg border-2 border-black shadow-[4px_4px_0px_0px_black] text-sm font-black flex flex-col items-center gap-2">
+                       <div className="flex items-center gap-2"><Zap size={16} className="text-[#FF6B4A]" /> {settings.raceModel === 'gemini-2.5-flash' ? 'Gemini 2.5 Flash' : settings.raceModel}</div>
+                       <button onClick={() => handleWinRace('challenger')} className="bg-[#FF6B4A] hover:bg-[#FF5530] text-white text-xs px-3 py-1 rounded border border-black font-bold uppercase tracking-wider">Select Winner</button>
+                    </div>
+                    <MobileFrame htmlContent={challengerHtmlCode} scale={zoom} loadingPhase={challengerDesignPhase} type={activeProject?.type || 'mobile'} />
                  </div>
                )}
-               <MobileFrame 
-                  htmlContent={getActiveScreenHtml()} 
-                  scale={zoom} 
-                  loadingPhase={designPhase}
-                  enableEditMode={activeTool === 'select'}
-                  type={activeProject?.type || 'mobile'}
-               />
-            </div>
-
-            {isRaceMode && (
-              <div className="relative flex flex-col items-center gap-4">
-                 <div className="bg-white px-4 py-2 rounded-lg border-2 border-black shadow-[4px_4px_0px_0px_black] text-sm font-black flex flex-col items-center gap-2">
-                    <div className="flex items-center gap-2"><Zap size={16} className="text-[#FF6B4A]" /> {settings.raceModel === 'gemini-2.5-flash' ? 'Gemini 2.5 Flash' : settings.raceModel}</div>
-                    <button onClick={() => handleWinRace('challenger')} className="bg-[#FF6B4A] hover:bg-[#FF5530] text-white text-xs px-3 py-1 rounded border border-black font-bold uppercase tracking-wider">Select Winner</button>
-                 </div>
-                 <MobileFrame htmlContent={challengerHtmlCode} scale={zoom} loadingPhase={challengerDesignPhase} type={activeProject?.type || 'mobile'} />
-              </div>
-            )}
-          </div>
-        </div>
+             </div>
+           </div>
+        )}
       </div>
     </div>
   );
