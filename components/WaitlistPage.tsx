@@ -289,6 +289,24 @@ const WaitlistPage: React.FC<WaitlistPageProps> = ({ onAccessGranted, onNavigate
                Limited spots available for the beta
             </p>
 
+            {/* PRODUCT HUNT BADGE */}
+            <div className="mt-10 animate-in fade-in slide-in-from-bottom-8 duration-700 delay-300">
+              <a 
+                href="https://www.producthunt.com/products/maxi-design?embed=true&utm_source=badge-featured&utm_medium=badge&utm_source=badge-maxi-design" 
+                target="_blank" 
+                rel="noreferrer"
+                className="inline-block rounded-xl border-2 border-black shadow-[4px_4px_0px_0px_black] overflow-hidden hover:translate-y-[-2px] hover:translate-x-[-2px] hover:shadow-[6px_6px_0px_0px_black] transition-all bg-white"
+              >
+                <img 
+                  src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1044840&theme=light&t=1764639553842" 
+                  alt="Maxi Design - Generate Mobile UI with AI, Edit Visually, Export Clean Code | Product Hunt" 
+                  style={{ width: '250px', height: '54px' }} 
+                  width="250" 
+                  height="54" 
+                />
+              </a>
+            </div>
+
             {/* DEMO ANIMATION SECTION */}
             <DemoSection />
 

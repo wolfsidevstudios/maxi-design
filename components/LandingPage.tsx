@@ -82,7 +82,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ view, onStartProject, project
             </div>
 
             {/* Neo-Brutalist Input Section */}
-            <div className="w-full max-w-2xl relative z-10 mb-16">
+            <div className="w-full max-w-2xl relative z-10 mb-8">
               <form onSubmit={handleSubmit} className="relative group">
                 <div className="relative bg-white border-2 border-black rounded-[2.5rem] shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all duration-200 focus-within:translate-x-[2px] focus-within:translate-y-[2px] focus-within:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex flex-col p-2 min-h-[160px]">
                     <textarea
@@ -153,6 +153,24 @@ const LandingPage: React.FC<LandingPageProps> = ({ view, onStartProject, project
                   </button>
                 ))}
               </div>
+            </div>
+
+            {/* PRODUCT HUNT BADGE */}
+            <div className="mb-16 animate-in fade-in slide-in-from-bottom-4 duration-500 delay-200">
+               <a 
+                 href="https://www.producthunt.com/products/maxi-design?embed=true&utm_source=badge-featured&utm_medium=badge&utm_source=badge-maxi-design" 
+                 target="_blank" 
+                 rel="noreferrer"
+                 className="inline-block rounded-xl border-2 border-black shadow-[4px_4px_0px_0px_black] overflow-hidden hover:translate-y-[-2px] hover:translate-x-[-2px] hover:shadow-[6px_6px_0px_0px_black] transition-all bg-white"
+               >
+                 <img 
+                   src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1044840&theme=light&t=1764639553842" 
+                   alt="Maxi Design - Generate Mobile UI with AI, Edit Visually, Export Clean Code | Product Hunt" 
+                   style={{ width: '250px', height: '54px' }} 
+                   width="250" 
+                   height="54" 
+                 />
+               </a>
             </div>
 
             {/* Scroll Indicator */}
